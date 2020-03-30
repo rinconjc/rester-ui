@@ -22,8 +22,8 @@
 
 (defn navigation []
   [:header
-    [:nav.top-nav>div.container>div.nav-wrapper>div.row>div.col.s12.m10.offset-m1
-     [:h1.header "Rester UI"]]
+   [:nav>div.nav-wrapper
+    [:a.right.sidenav-trigger {:href "#" :data-target "slide-out"} [:i.material-icons "menu"]]]
     [:ul#slide-out.sidenav.sidenav-fixed
      [:li>h1.header "Rester-UI"]
      [:li>div.divider]
