@@ -8,3 +8,6 @@
 
 (defn active-page []
   (r/cursor app-state [:page]))
+
+(defn page-title []
+  (r/cursor app-state [:page :data :title]))

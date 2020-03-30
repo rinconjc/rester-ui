@@ -23,7 +23,9 @@
 (defn navigation []
   [:header
    [:nav>div.nav-wrapper
-    [:a.right.sidenav-trigger {:href "#" :data-target "slide-out"} [:i.material-icons "menu"]]]
+    [:a.sidenav-trigger {:href "#" :data-target "slide-out"} [:i.material-icons "menu"]]
+    [:ul>li.header @(m/page-title)]]
+   [u/with-init
     [:ul#slide-out.sidenav.sidenav-fixed
      [:li>h1.header "Rester-UI"]
      [:li>div.divider]
@@ -43,41 +45,29 @@
                                             :on-click #(do (js/console.log "clicked!"))} "folder_open"]
                   [:i.material-icons.right
                    {:title "Add Test Suite"
-                    :on-click #(u/no-default h/show :test-suite {})} "library_add"]]]]]]])
+                    :on-click #(u/no-default h/show :test-suite {})} "library_add"]]]]]]
+    #(ocall js/M.Sidenav "init" %)]])
 
 (defn home-page []
-  [:div
-   [navigation]
-   [:main]
-   [:footer]])
+  [:h1 "Rester UI"])
+
+(defn test-case-page []
+  [:h1 "Test Case"])
 
 (def routes
-  [["/" {:name :home :view #'home-page :title ""}]])
+  [["/" {:name :home :view #'home-page :title "Rester UI"}]
+   ["/test-case" {:name :test-case :view #'test-case-page :title "New Test Case"}]])
+
+(defn main []
+  (r/with-let [p (m/active-page)]
+    [:main (:view @p)]))
 
 (defn current-page []
-  (r/with-let [p (m/active-page)]
-    [:div
-     (when-let [data (-> @p :data)]
-       [:div
-        [navigation]
-        [:main]
-        [:footer]]
-       ;; (if (= :home (:name data))
-       ;;   [(:view data) (r/cursor p [:data])]
-       ;;   [:div
-       ;;    [navigation]
-       ;;    [:div.container
-       ;;     [:div.row
-       ;;      [:div.col.s12.center-align
-       ;;       [:h3.header (:title data)]]]
-       ;;     [:div.row
-       ;;      [(:view data) (r/cursor p [:data])]]]])
-       )]))
-
-(defn hello-world []
   [:div
-   [:h1 (:text @app-state)]
-   [:h3 "Edit this in src/rester_ui/core.cljs and watch it change!"]])
+   [:div
+    [navigation]
+    [main]
+    [:footer]]])
 
 (defn mount [el]
   (r/render-component [current-page] el))
