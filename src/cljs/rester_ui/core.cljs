@@ -41,8 +41,9 @@
          ]]
        [:li>div.divider]
        [:li.bold [:a.collapsible-header {:href "#!"} "Test Suites"
-                  [:i.material-icons.right {:title "Open Test Suites"
-                                            :on-click #(do (js/console.log "clicked!"))} "folder_open"]
+                  [:i.material-icons.right.modal-trigger
+                   {:title "Open Test Suites" :data-target "open-suite"
+                    :on-click #(do (js/console.log "clicked!"))} "folder_open"]
                   [:i.material-icons.right
                    {:title "Add Test Suite"
                     :on-click #(u/no-default h/show :test-suite {})} "library_add"]]]]]]
@@ -62,11 +63,35 @@
   (r/with-let [p (m/active-page)]
     [:main (:view @p)]))
 
+(defn open-tests []
+  (r/with-let [form (atom {})]
+    [:div#open-suite.modal
+     [:div.modal-content
+      [:h4 "Open Test Suites"]
+      [:form.col.s12
+       [:div.row
+        [:div.file-field.input-field
+         [:div.btn
+          [:span "Test Suite"]
+          [:input {:type "file" :on-change #(swap! form assoc :file
+                                                   (-> (oget % "target") (oget "files") (aget 0)))}]]
+         [:div.file-path-wrapper
+          [:input.file-path.validate {:type "text"}]]]]]]
+     [:div.modal-footer
+      [:a.btn.waves-effect.waves-green {:on-click #(h/load-tests form)} "Open"] " "
+      [:a.modal-close.btn.waves-effect.waves-green "Close"]]]))
+
+(defn open-suite-modal []
+  [u/with-init
+   [open-tests]
+   #(ocall js/M.Modal "init" %)])
+
 (defn current-page []
   [:div
    [:div
     [navigation]
     [main]
+    [open-suite-modal]
     [:footer]]])
 
 (defn mount [el]

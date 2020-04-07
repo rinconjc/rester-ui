@@ -25,3 +25,15 @@
     :component-did-mount
     (fn [this]
       (mount-fn (r/dom-node this)))}))
+
+(defn with-binding
+  ([form path] (with-binding {} form path identity))
+  ([attrs form path] (with-binding attrs form path identity))
+  ([attrs form path xf]
+   (let [path (if (vector? path) path [path])]
+     (assoc attrs
+            :on-change #(swap! form assoc-in path
+                               (if (= "file" (:type attrs))
+                                 (-> (oget % "target") (oget "files") (aget 0) xf)
+                                 (-> (oget % "target") (oget "value") xf)))
+            :value (or (get-in @form path) "")))))
