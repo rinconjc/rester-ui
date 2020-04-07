@@ -1,4 +1,6 @@
-^{:watch-dirs ["test" "src"]
+^{:watch-dirs ["test" "src/cljs"]
   :css-dirs ["resources/public/css"]
-  :auto-testing true}
+  :auto-testing true
+  :open-file-command "emacsclient"
+  :open-url "http://localhost:4000"}
 {:main rester-ui.core}
