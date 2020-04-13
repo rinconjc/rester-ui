@@ -1,15 +1,13 @@
 (ns ^:figwheel-hooks rester-ui.core
-  (:require
-   [goog.dom :as gdom]
-   [reagent.core :as r :refer [atom]]
-   [oops.core :refer [oset! oget ocall]]
-   [rester-ui.utils :as u]
-   [rester-ui.handlers :as h]
-   [rester-ui.model :as m]
-   [reitit.frontend :as rf]
-   [reitit.frontend.easy :as rfe]))
-
-(println "This text is printed from src/rester_ui/core.cljs. Go ahead and edit it and see reloading in action.")
+  (:require [goog.dom :as gdom]
+            [oops.core :refer [ocall]]
+            [reagent.core :as r :refer [atom]]
+            [reitit.frontend :as rf]
+            [reitit.frontend.easy :as rfe]
+            [rester-ui.handlers :as h]
+            [rester-ui.model :as m]
+            [rester-ui.utils :as u]
+            [rester-ui.views :as v]))
 
 (defn multiply [a b] (* a b))
 
@@ -29,69 +27,45 @@
     [:ul#slide-out.sidenav.sidenav-fixed
      [:li>h1.header "Rester-UI"]
      [:li>div.divider]
-     [:li.no-padding
-      [:ul.collapsible.collapsible-accordion
-       [:li.bold
-        [:a.collapsible-header {:href "#!"} "Profiles"
-         [:i.material-icons.right {:title "Open profiles"
-                                   :on-click #(do (js/console.log "clicked!"))} "folder_open"]
-         [:i.material-icons.right {:title "Add profile"} "library_add"]]
-        [:div.collapsible-body>ul
-         ;; [:li>a {:href "#!"} [:i.material-icons "folder_open"] "Open"]
-         ]]
-       [:li>div.divider]
-       [:li.bold [:a.collapsible-header {:href "#!"} "Test Suites"
-                  [:i.material-icons.right.modal-trigger
-                   {:title "Open Test Suites" :data-target "open-suite"
-                    :on-click #(do (js/console.log "clicked!"))} "folder_open"]
-                  [:i.material-icons.right
-                   {:title "Add Test Suite"
-                    :on-click #(u/no-default h/show :test-suite {})} "library_add"]]]]]]
+     [:li
+      [u/with-init
+       [:ul.collapsible.collapsible-expandable
+        [:li
+         [:a.collapsible-header {:href "#!"} "Profiles"
+          [:i.material-icons.right {:title "Open profiles"
+                                    :on-click #(do (js/console.log "clicked!"))} "folder_open"]
+          [:i.material-icons.right {:title "Add profile"} "library_add"]]
+         [:div.collapsible-body>ul]]
+        [:li>div.divider]
+        [v/test-suites-nav]]
+       #(ocall js/M.Collapsible "init" %)]]]
     #(ocall js/M.Sidenav "init" %)]])
 
 (defn home-page []
   [:h1 "Rester UI"])
 
 (defn test-case-page []
-  [:h1 "Test Case"])
+  [v/test-view @(r/track m/active-test)])
 
 (def routes
   [["/" {:name :home :view #'home-page :title "Rester UI"}]
-   ["/test-case" {:name :test-case :view #'test-case-page :title "New Test Case"}]])
+   ["/test-case/:id" {:name :test-case :view #'test-case-page :title "New Test Case"
+                      ;; :parameters {:path {:id int?}}
+                      :init (fn[{{id :id} :path-params}] (h/active-test id))}]])
 
 (defn main []
-  (r/with-let [p (m/active-page)]
-    [:main (:view @p)]))
-
-(defn open-tests []
-  (r/with-let [form (atom {})]
-    [:div#open-suite.modal
-     [:div.modal-content
-      [:h4 "Open Test Suites"]
-      [:form.col.s12
-       [:div.row
-        [:div.file-field.input-field
-         [:div.btn
-          [:span "Test Suite"]
-          [:input {:type "file" :on-change #(swap! form assoc :file
-                                                   (-> (oget % "target") (oget "files") (aget 0)))}]]
-         [:div.file-path-wrapper
-          [:input.file-path.validate {:type "text"}]]]]]]
-     [:div.modal-footer
-      [:a.btn.waves-effect.waves-green {:on-click #(h/load-tests form)} "Open"] " "
-      [:a.modal-close.btn.waves-effect.waves-green "Close"]]]))
-
-(defn open-suite-modal []
-  [u/with-init
-   [open-tests]
-   #(ocall js/M.Modal "init" %)])
+  (r/with-let [{{:keys [view init]} :data :as p} @(r/track m/active-page)]
+    (u/log "view" view "init" init "p" p)
+    (when init (init p))
+    [:main (when view [view])]))
 
 (defn current-page []
   [:div
    [:div
     [navigation]
     [main]
-    [open-suite-modal]
+    [v/open-suite-modal]
+    [v/error-popup]
     [:footer]]])
 
 (defn mount [el]
