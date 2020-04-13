@@ -5,3 +5,6 @@
   border-bottom: 1px solid rgba(0,0,0,0.14);
   /* background-color: transparent; */
 }
+.padded {
+  padding-left: 15px;
+}
