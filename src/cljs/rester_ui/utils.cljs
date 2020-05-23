@@ -9,6 +9,14 @@
   (log x)
   (last x))
 
+(defn remove-nth [xs n]
+  (into [] (concat (subvec xs 0 n) (subvec xs (inc n)))))
+
+(defn map-as-vector [state]
+  (fn
+    ([k] (into [] (get-in @state k)))
+    ([k v] (swap! state assoc-in k (into {} v)))))
+
 (defn no-default [f & args]
   (fn[e]
     (try (apply f args)
@@ -25,6 +33,10 @@
     :component-did-mount
     (fn [this]
       (mount-fn (r/dom-node this)))}))
+
+(defn with-value [f]
+  (fn [e]
+    (-> (oget e "target") (oget "value") f)))
 
 (defn with-binding
   ([form path] (with-binding {} form path identity))

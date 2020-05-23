@@ -45,19 +45,21 @@
   [:h1 "Rester UI"])
 
 (defn test-case-page []
+  (println "test-case-page")
   [v/test-view @(r/track m/active-test)])
 
 (def routes
   [["/" {:name :home :view #'home-page :title "Rester UI"}]
    ["/test-case/:id" {:name :test-case :view #'test-case-page :title "New Test Case"
-                      ;; :parameters {:path {:id int?}}
-                      :init (fn[{{id :id} :path-params}] (h/active-test id))}]])
+                      :parameters {:path {:id int?}}
+                      :init (fn[{{id :id} :path-params}]
+                              (h/set-active-test! (js/parseInt id)))}]])
 
 (defn main []
-  (r/with-let [{{:keys [view init]} :data :as p} @(r/track m/active-page)]
-    (u/log "view" view "init" init "p" p)
-    (when init (init p))
-    [:main (when view [view])]))
+  (r/with-let [page (r/track m/active-page)]
+    (println "main...")
+    [:main>div.container
+     [(or (get-in @page [:data :view]) :div)]]))
 
 (defn current-page []
   [:div
@@ -75,7 +77,7 @@
   (rfe/start! (rf/router routes)
               (fn[match hist]
                 (m/set-active-page! match)
-                (u/log "match:" match)
+                ;; (u/log "match:" match)
                 ;; (h/on-page-start match)
                 )
               {})

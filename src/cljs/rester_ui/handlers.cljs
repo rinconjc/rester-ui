@@ -18,5 +18,6 @@
                                     :error {:title "Failed Loading Tests"
                                             :message (js/JSON.stringify (clj->js (:response %)))})))
 
-(defn active-test [id]
+(defn set-active-test! [id]
+  (println "activating test:" id)
   (swap! app-state assoc :active-test id))
