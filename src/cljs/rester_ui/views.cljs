@@ -63,7 +63,92 @@
             [:li>a {:href (str "#/test-case/" (:id t))} (:name t)])]])]
      #(ocall js/M.Collapsible "init" % #js{:accordion false})]]])
 
-(defn test-view [t]
-  [:div
-   (u/log "test:" t)
-   [:h2 (:name t)]])
+(defn button [icon title on-click]
+  [:a.red-text.text-lighten-3 {:href "#!" :on-click on-click :title title} [:i.material-icons icon]])
+
+(defn tuples-form [label entries]
+  [:div.row
+   (doall
+    (for [[i [name value]] (map-indexed vector @entries)] ^{:key i}
+      [:div.col.s12
+       [:div.input-field.col.s5
+        [:input (u/with-binding {:type "text" :placeholder label} entries [i 0])]]
+       [:div.input-field.col.s5
+        [:input (u/with-binding {:type "text" :placeholder (str label " Value")} entries [i 1])]]
+       [:div.input-field.col.s2
+        [button "delete" (str "Remove " label) (u/no-default swap! entries u/remove-nth i)]]]))
+   [:div.col.s12
+    [:a.btn.btn-floating.btn-small.waves-effect.waves-light
+     {:href "#!" :on-click (u/no-default swap! entries (fnil conj []) ["" ""])}
+     [:i.material-icons "add"]]]])
+
+(defn body-form [value-ref]
+  [:div.row
+   [:div.input-field.col.s12
+    [:textarea.materialize-textarea
+     {:on-change (u/with-value (partial reset! value-ref))
+      :value @value-ref}]]])
+
+(defn expected-form [expect]
+  [:div.row
+   [:div.col.s12
+    [:div.input-field.col.s12.m2
+     [:input#status (u/with-binding {:type "number" :placeholder "Status"} expect :status)]
+     [:label.active {:for "status"} "Status"]]]
+   [:div.col.s12>h6 "Headers"
+    [tuples-form "Header" (r/cursor (u/map-as-vector expect) [:headers])]]
+   [:div.col.s12>h6 "Body"
+    [body-form (r/cursor expect [:body])]]])
+
+(defn options-form [opts]
+  [:div.row
+   [:div.col.s12>h6 "Extractors"
+    [tuples-form "Extractor" (r/cursor (u/map-as-vector opts) [:extractors])]]
+   [:div.col.s12
+    [:div.input-field.col.s12.m2
+     [:input#priority (u/with-binding {:type "number" :placeholder "priority"} opts :priority)]
+     [:label.active {:for "priority"} "Priority"]]
+    [:div.input-field.col.s12.m3
+     [:input#skip (u/with-binding {:type "text" :placeholder "skip"} opts :skip)]
+     [:label.active {:for "skip"} "Skip"]]
+    [:div.input-field.col.s12.m3>label
+     [:input (u/with-binding {:type "checkbox"} opts :parse-body)]
+     [:span "Parse Body"]]
+    [:div.input-field.col.s12.m3>label
+     [:input (u/with-binding {:type "checkbox"} opts :ignore)]
+     [:span "Ignore"]]]])
+
+(defn test-view [test]
+  [:div.row
+   [:div.input-field.col.s12
+    [:input (u/with-binding {:type "text" :placeholder "Test Name"} test :name)]]
+   [:div.col.s12
+    [u/with-init
+     [:ul.tabs.z-depth-1
+      [:li.tab.col.s3>a {:href "#reqTab"} "Request"]
+      [:li.tab.col.s3>a {:href "#expectTab"} "Expect"]
+      [:li.tab.col.s3>a {:href "#optsTab"} "Options"]
+      [:li.tab.col.s3>a {:href "#respTab"} "Response"]]
+     #(ocall js/M.Tabs "init" %)]]
+   [:div#reqTab.col.s12
+    [:div.row
+     [:div.input-field.col.s12.m2
+      [u/with-init
+       [:select (u/with-binding test :verb)
+        (for [m [:POST :GET :PUT :PATCH :DELETE]] ^{:key m}
+          [:option {:value (name m)} (name m)])]
+       #(ocall js/M.FormSelect "init" %)]]
+     [:div.input-field.col.s12.m10
+      [:input (u/with-binding {:type "text" :placeholder "URL"} test :url )]]
+     [:div.col.s12>h6 "Headers"
+      [tuples-form "Header" (r/cursor (u/map-as-vector test) [:headers])]]
+     [:div.col.s12>h6 "Query Params"
+      [tuples-form "Param" (r/cursor test [:params])]]
+     (when-not (#{"GET" "DELETE"} (:verb @test))
+       [:div.col.s12>h6 "Body"
+       [body-form (r/cursor test [:body])]])]]
+   [:div#expectTab.col.s12
+    [expected-form (r/cursor test [:expect])]]
+   [:div#optsTab.col.s12
+    [options-form (r/cursor test [:options])]]
+   [:div#respTab.col.s12]])

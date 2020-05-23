@@ -12,10 +12,11 @@
                  [metosin/reitit "0.4.2"]
                  [metosin/reitit-ring "0.4.2"]
                  [yogthos/config "1.1.1"]
-                 [cljs-ajax "0.8.0"]
+                 [cljs-ajax "0.8.0" :exclusions [org.apache.httpcomponents/httpasyncclient org.apache.httpcomponents/httpcore]]
                  [binaryage/oops "0.7.0"]
                  [rester "0.2.2-SNAPSHOT"]
-                 [metosin/reitit-frontend "0.4.2"]]
+                 [metosin/reitit-frontend "0.4.2"]
+                 [ring/ring-mock "0.4.0"]]
 
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
 
