@@ -23,10 +23,11 @@
 (s/def ::test-cases (s/coll-of ::res/test-case :into []))
 (s/def ::failure string?)
 (s/def ::request-time int?)
-(s/def ::response (s/keys :opt-un [::request-time ::res/headers ::res/status ::res/body]))
+(s/def ::response (s/keys :opt-un [::request-time ::res/headers ::res/status ::res/body
+                                   ::version]))
 (s/def ::exec-request (s/keys :req-un [::test-cases] :opt-un [::res/profile]))
-(s/def ::exec-result (s/keys :req-un [::res/name ::res/verb ::res/url ::res/headers]
-                             :opt-un [::failure  ::res/body ::response]))
+(s/def ::exec-result (s/keys :req-un [::res/id ::res/url ::res/verb ::res/headers]
+                             :opt-un [::res/success ::res/body ::failure ::error ::response]))
 (s/def ::exec-response (s/coll-of ::exec-result :into []))
 
 (defn coercion-error-handler [status]
@@ -48,14 +49,14 @@
    (ring/router
     [["/ping" {:get #(hash-map :body (str "pong at " (Date.)))}]
      ["/load-tests" {:post {:parameters {:multipart {:file multipart/temp-file-part}}
+                            :responses {200 {:body ::test-cases}}
                             :handler (fn [{{{file :file} :multipart} :parameters}]
-                                       (log/info "handling load-tests..." file)
-                                       ;; (throw (ex-info "invalid file" {:message "invalid file"} ))
+                                       (log/info "handling load-tests===" file)
                                        {:status 200
                                         :body (rester/load-tests (.getPath (:tempfile file))
-                                                                 {:type :yaml})})}}]
+                                                                 (select-keys file [:filename]))})}}]
      ["/exec-tests" {:post {:parameters {:body ::exec-request}
-                           :responses {200 {:body ::exec-response}}
+                            :responses {200 {:body ::exec-response}}
                             :handler (fn [{{{:keys [test-cases profile]} :body} :parameters :as req}]
                                        {:status 200
                                         :body (rester/exec-tests test-cases (or profile {}))})}}]]
@@ -73,7 +74,8 @@
                            exception/default-handlers
                            {:reitit.coercion/request-coercion (coercion-error-handler 400)
                             :reitit.coercion/response-coercion (coercion-error-handler 500)
-                            ::exception/default (fn[e req] (log/error e "exception!")
+                            ::exception/default (fn[e req]
+                                                  (log/error e "exception:", (ex-data e))
                                                   (exception/default-handler e req))}))
                          ;; exception/exception-middleware
                          ;; coercing request parameters

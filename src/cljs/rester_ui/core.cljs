@@ -68,6 +68,7 @@
     [main]
     [v/open-suite-modal]
     [v/error-popup]
+    [v/input-vars-prompt]
     [:footer]]])
 
 (defn mount [el]

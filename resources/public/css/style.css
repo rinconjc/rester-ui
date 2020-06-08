@@ -8,3 +8,13 @@
 .padded {
   padding-left: 15px;
 }
+
+.verb {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.code {
+  height: 200px;
+  width: 100%;
+}
