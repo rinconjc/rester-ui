@@ -17,7 +17,7 @@
     :else (= x y)))
 
 (def sample-test {:test-cases
-                  [{:suite "Default" :name "Test1" :verb :get
+                  [{:suite "Default" :id 1 :name "Test1" :verb :get
                     :url "$base$/products"
                     :expect {:status 200}}]
                   :profile {:bindings {"base" "https://mockfirst.com"}}})
@@ -35,7 +35,8 @@
               (app (-> (mock/request :post "/exec-tests")
                        (mock/json-body {:blah 123}))))))
   (testing "post valid payload"
-    (is (like {:status 200 :body [{:verb "get"
+    (is (like {:status 200 :body [{:id 1
+                                   :success true
                                    :url "https://mockfirst.com/products"
                                    :response {:status 200}}]}
               (update

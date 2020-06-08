@@ -36,3 +36,12 @@
     (when @active
       (println "active :" @active)
       (r/cursor app-state [:tests @active]))))
+
+(defn input-vars []
+  (r/cursor app-state [:prompt-for-input-vars]))
+
+(defn profiles []
+  (:profiles @app-state))
+
+(defn get-profile [name]
+  (-> @app-state :profiles (get name)))
