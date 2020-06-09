@@ -1,8 +1,11 @@
 (ns rester-ui.model
   (:require [reagent.core :as r :refer [atom]]
-            [rester-ui.utils :as u]))
+            [rester-ui.utils :as u]
+            [rester.specs :as rs]))
 
 (defonce app-state (atom {}))
+
+(def http-verbs rs/http-verbs)
 
 (defn set-active-page! [p]
   (let [init-fn (get-in p [:data :init])]

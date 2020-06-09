@@ -3,7 +3,8 @@
             [reagent.core :as r :refer [atom]]
             [rester-ui.handlers :as h]
             [rester-ui.model :as m]
-            [rester-ui.utils :as u]))
+            [rester-ui.utils :as u]
+            [clojure.string :as str]))
 
 (defn test-case-edit [test-case]
   )
@@ -56,11 +57,12 @@
     [u/with-init
      [:ul.collapsible.expandable
       (for [[suite tests] @(r/track m/test-suites)] ^{:key suite}
-        [:li
+        [:li.menu-items
          [:a.collapsible-header suite]
-         [:div.collapsible-body>div.padded>ul
+         [:div.collapsible-body>div.padded>ul.menu-items
           (for [t tests] ^{:key (:name t)}
-            [:li>a {:href (str "#/test-case/" (:id t))} (:name t)])]])]
+            [:li>a {:href (str "#/test-case/" (:id t))
+                              :title (:name t)} (:name t)])]])]
      #(ocall js/M.Collapsible "init" % #js{:accordion false})]]])
 
 (defn button [icon title on-click]
@@ -186,8 +188,8 @@
      [:div.input-field.col.s12.m2
       [u/with-init
        [:select (u/with-binding test :verb)
-        (for [m [:GET :POST :PUT :PATCH :DELETE]] ^{:key m}
-          [:option.verb {:value (name m)} (name m)])]
+        (for [m m/http-verbs] ^{:key m}
+          [:option {:value m} (str/upper-case (name m))])]
        #(ocall js/M.FormSelect "init" %)]]
      [:div.input-field.col.s12.m10
       [:input (u/with-binding {:type "text" :placeholder "URL"} test :url )]]
