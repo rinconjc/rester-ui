@@ -1,3 +1,12 @@
+header, main, footer {
+    padding-left: 300px;
+}
+
+@media only screen and (max-width : 992px) {
+    header, main, footer {
+        padding-left: 0;
+    }
+}
 /* some style */
 .top-nav{
   height: 110px;
@@ -17,4 +26,15 @@
 .code {
   height: 200px;
   width: 100%;
+}
+
+/* menu item fix */
+.menu-items{
+    width: 100%;
+    /* padding-right: 10px; */
+}
+.menu-items a{
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
