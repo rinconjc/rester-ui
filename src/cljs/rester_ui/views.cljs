@@ -91,7 +91,8 @@
      [:div.input-field.col.s12
       [u/with-init
        [:div.code initial]
-       #(let [editor (js/ace.edit % #js{"mode" "ace/mode/json"})]
+       #(let [editor (js/ace.edit % #js{"mode" "ace/mode/json"
+                                        "theme" "ace/theme/solarized_dark"})]
           (ocall editor "on" "change" (fn[_] (reset! value-ref (ocall editor "getValue")))))]]]))
 
 (defn expected-form [expect]
@@ -187,7 +188,7 @@
     [:div.row
      [:div.input-field.col.s12.m2
       [u/with-init
-       [:select (u/with-binding test :verb)
+       [:select (u/with-binding {} test :verb keyword)
         (for [m m/http-verbs] ^{:key m}
           [:option {:value m} (str/upper-case (name m))])]
        #(ocall js/M.FormSelect "init" %)]]
@@ -197,7 +198,7 @@
       [tuples-form "Header" (r/cursor (u/map-as-vector test) [:headers])]]
      [:div.col.s12>h6 "Query Params"
       [tuples-form "Param" (r/cursor test [:params])]]
-     (when-not (#{"GET" "DELETE"} (:verb @test))
+     (when-not (#{:get :delete :options} (:verb @test))
        [:div.col.s12>h6 "Body"
         [body-form (r/cursor test [:body])]])]]
    [:div#expectTab.col.s12
