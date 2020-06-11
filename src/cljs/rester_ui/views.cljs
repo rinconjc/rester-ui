@@ -66,7 +66,7 @@
      #(ocall js/M.Collapsible "init" % #js{:accordion false})]]])
 
 (defn button [icon title on-click]
-  [:a.red-text.text-lighten-3 {:href "#!" :on-click on-click :title title} [:i.material-icons icon]])
+  [:a.link {:href "#!" :on-click on-click :title title} [:i.material-icons icon]])
 
 (defn tuples-form [label entries]
   [:div.row
@@ -92,7 +92,7 @@
       [u/with-init
        [:div.code initial]
        #(let [editor (js/ace.edit % #js{"mode" "ace/mode/json"
-                                        "theme" "ace/theme/solarized_dark"})]
+                                        "theme" "ace/theme/idle_fingers"})]
           (ocall editor "on" "change" (fn[_] (reset! value-ref (ocall editor "getValue")))))]]]))
 
 (defn expected-form [expect]
@@ -133,8 +133,7 @@
        (:error result)
        [:div.col.s12
         [:h5.red-text [:i.material-icons.left "cancel_circle"] "Error"]
-        [:span (:error result)]]
-       )
+        [:span (:error result)]])
 
      [:div.col.s12>h5 "Request:"]
      [:div.col.s12 [:span.verb (:verb result)] " " (:url result)]
@@ -166,7 +165,8 @@
                            "readOnly" true
                            "showLineNumbers" false
                            "showPrintMargin" false
-                           "showGutter" false})]]]))
+                           "showGutter" false
+                           "theme" "ace/theme/idle_fingers"})]]]))
 
 (defn test-view [test]
   [:div.row
@@ -238,6 +238,6 @@
                      profile :name)]
            [:label.active {:for "profile"} "Save As"]]]]
         [:div.modal-footer
-         [:a.modal-close.btn.waves-effect.waves-red.red
+         [:a.modal-close.btn.waves-effect
           {:on-click #(h/save-input-vars @profile)} "Ok"]]]
        #(-> js/M.Modal (ocall "init" %) (ocall "open" #js{"onCloseEnd" h/dismiss-vars-prompt}))])))
