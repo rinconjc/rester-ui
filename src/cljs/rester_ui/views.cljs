@@ -120,41 +120,45 @@
 
 (defn result-view [result]
   (when result
-    [:div.row
-     (cond
-       (:success result)
-       [:div.col.s12>h5.green-text [:i.material-icons.left "check_circle"] "Success"]
-       (:error result)
-       [:div.col.s12
-        [:h5.red-text [:i.material-icons.left "cancel_circle"] "Error"]
-        [:span (:error result)]])
+    [:div
+     [:div.row
+      (cond
+        (:success result)
+        [:div.col.s12>h5.green-text [:i.material-icons.left "check_circle"] "Success"]
+        (:error result)
+        [:div.col.s12
+         [:h5.danger [:i.material-icons.left "cancel_circle"] "Error"]
+         [:span.danger (:error result)]])]
 
-     [:div.col.s12>h5 "Request:"]
-     [:div.col.s12 [:span.verb (:verb result)] " " (:url result)]
-     [:div
-      (doall
-       (for [[i [h v]] (map-indexed vector (:headers result))] ^{:key i}
-         [:div.col.s12 [:b h " : "] v]))]
+     [:div.row
+      [:div.col.s12>h5 "Request:"]
+      [:div.col.s12 [:span.verb (:verb result)] " " (:url result)]]
+
+     (when (:headers result)
+       [:div.row
+        (doall
+         (for [[i [h v]] (map-indexed vector (:headers result))] ^{:key i}
+           [:div.col.s12 [:b h " : "] v]))])
 
      (when (:body result)
-       [:div.col.s12
-        [:code (:body result)]])
+       [:div.row
+        [:div.col.s12
+         [u/code-editor (:body result) "mode" (u/editor-mode (m/content-type (:headers result)))]]])
 
-     (when (:body result)
-       [:div.col.s12>h6 "Body"
-        [:code (:body result)]])
-     [:div.col.s12>h5 "Response:"]
-     [:div
-      [:div.col.s12 "HTTP/1.1 " (get-in result [:response :status])]
+     [:div.row
+      [:div.col.s12>h5 "Response:"]
+      [:div.col.s12 "HTTP/1.1 " (get-in result [:response :status])]]
+
+     [:div.row
       (doall
        (for [[i [h v]] (map-indexed vector (get-in result [:response :headers]))] ^{:key i}
          [:div.col.s12 [:b h " : "] v]))]
-     [:div.col.s12
-      [u/code-editor (-> result
-                      (get-in [:response :body])
-                      (clj->js)
-                      (js/JSON.stringify nil 1))
-       "readOnly" true "showGutter" false "showLineNumbers" false]]]))
+
+     [:div.row
+      [:div.col.s12
+       [u/code-editor (get-in result [:response :body])
+        "mode" (u/editor-mode (m/content-type (get-in result [:responsse :headers])))
+        "readOnly" true "showGutter" false "showLineNumbers" false]]] ]))
 
 (defn test-view [test]
   [:div.row
