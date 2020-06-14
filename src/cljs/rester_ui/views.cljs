@@ -62,7 +62,7 @@
          [:div.collapsible-body>div.padded>ul.menu-items
           (for [t tests] ^{:key (:name t)}
             [:li>a {:href (str "#/test-case/" (:id t))
-                              :title (:name t)} (:name t)])]])]
+                    :title (:name t)} (:name t)])]])]
      #(ocall js/M.Collapsible "init" % #js{:accordion false})]]])
 
 (defn button [icon title on-click]
@@ -84,16 +84,10 @@
      {:href "#!" :on-click (u/no-default swap! entries (fnil conj []) ["" ""])}
      [:i.material-icons "add"]]]])
 
-(defn body-form [value-ref]
-  (println "rendering body-form")
-  (r/with-let [initial @value-ref]
-    [:div.row
-     [:div.input-field.col.s12
-      [u/with-init
-       [:div.code initial]
-       #(let [editor (js/ace.edit % #js{"mode" "ace/mode/json"
-                                        "theme" "ace/theme/idle_fingers"})]
-          (ocall editor "on" "change" (fn[_] (reset! value-ref (ocall editor "getValue")))))]]]))
+(defn body-form [value-ref mime]
+  [:div.row
+   [:div.input-field.col.s12
+    [u/code-editor value-ref "mode" (u/editor-mode mime)]]])
 
 (defn expected-form [expect]
   [:div.row
@@ -104,7 +98,7 @@
    [:div.col.s12>h6 "Headers"
     [tuples-form "Header" (r/cursor (u/map-as-vector expect) [:headers])]]
    [:div.col.s12>h6 "Body"
-    [body-form (r/cursor expect [:body])]]])
+    [body-form (r/cursor expect [:body]) (m/content-type (:headers @expect))]]])
 
 (defn options-form [opts]
   [:div.row
@@ -156,17 +150,11 @@
        (for [[i [h v]] (map-indexed vector (get-in result [:response :headers]))] ^{:key i}
          [:div.col.s12 [:b h " : "] v]))]
      [:div.col.s12
-      [u/with-init
-       [:div.code (-> result
+      [u/code-editor (-> result
                       (get-in [:response :body])
                       (clj->js)
-                      (js/JSON.stringify nil 1))]
-       #(js/ace.edit % #js{"mode" "ace/mode/json"
-                           "readOnly" true
-                           "showLineNumbers" false
-                           "showPrintMargin" false
-                           "showGutter" false
-                           "theme" "ace/theme/idle_fingers"})]]]))
+                      (js/JSON.stringify nil 1))
+       "readOnly" true "showGutter" false "showLineNumbers" false]]]))
 
 (defn test-view [test]
   [:div.row
@@ -187,11 +175,10 @@
    [:div#reqTab.col.s12
     [:div.row
      [:div.input-field.col.s12.m2
-      [u/with-init
+      [u/select-wrapper
        [:select (u/with-binding {} test :verb keyword)
         (for [m m/http-verbs] ^{:key m}
-          [:option {:value m} (str/upper-case (name m))])]
-       #(ocall js/M.FormSelect "init" %)]]
+          [:option {:value m} (str/upper-case (name m))])]]]
      [:div.input-field.col.s12.m10
       [:input (u/with-binding {:type "text" :placeholder "URL"} test :url )]]
      [:div.col.s12>h6 "Headers"
@@ -200,7 +187,7 @@
       [tuples-form "Param" (r/cursor test [:params])]]
      (when-not (#{:get :delete :options} (:verb @test))
        [:div.col.s12>h6 "Body"
-        [body-form (r/cursor test [:body])]])]]
+        [body-form (r/cursor test [:body]) (m/content-type (:headers @test)) ]])]]
    [:div#expectTab.col.s12
     [expected-form (r/cursor test [:expect])]]
    [:div#optsTab.col.s12
@@ -218,14 +205,13 @@
          [:h4 "Test Variables"]
          [:div.row
           [:div.input-field.col.s6
-           [u/with-init
+           [u/select-wrapper
             [:select#profile
              {:on-change (u/with-value #(reset! profile (m/get-profile %)))}
              [:option "Use Profile"]
              (doall
               (for [[i [n _]] (map-indexed vector (m/profiles))] ^{:key i}
-                [:option {:value n} n]))]
-            #(ocall js/M.FormSelect "init" %)]
+                [:option {:value n} n]))]]
            [:label {:for "profile"} "Profiles:"]]
           (doall
            (for [[i var] (map-indexed vector (:vars @vars))]^{:key i}
@@ -240,4 +226,6 @@
         [:div.modal-footer
          [:a.modal-close.btn.waves-effect
           {:on-click #(h/save-input-vars @profile)} "Ok"]]]
-       #(-> js/M.Modal (ocall "init" %) (ocall "open" #js{"onCloseEnd" h/dismiss-vars-prompt}))])))
+       #(-> js/M.Modal
+            (ocall "init" % #js{"onCloseEnd" h/dismiss-vars-prompt})
+            (ocall "open"))])))
