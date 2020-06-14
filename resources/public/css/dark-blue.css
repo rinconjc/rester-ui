@@ -6,9 +6,6 @@ body{
 input {
     color: white;
 }
-header, main, footer {
-    padding-left: 300px;
-}
 .tabs {
     background-color: #262938  !important; /*#26a69a */
 }
