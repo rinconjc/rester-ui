@@ -48,7 +48,7 @@
          (ocall form-select "_handleSelectChange"))))])
 
 (defn code-editor [text-ref & {:as opts}]
-  (r/with-let [target (when-not (string? text-ref) (atom text-ref))]
+  (r/with-let [target (when-not (or (string? text-ref) (nil? text-ref)) (atom text-ref))]
     (r/create-class
      {:reagent-render
       (fn [text-ref & {:as opts}]
@@ -60,7 +60,7 @@
                                        "showPrintMargin" false
                                        "theme" "ace/theme/idle_fingers"}
                                       (merge opts) clj->js))]
-          (ocall editor "setValue" @text-ref)
+          (ocall editor "setValue" (or (if target @text-ref text-ref)  ""))
           (when target
             (ocall editor "on" "change"
                    (fn [] (reset! @target (ocall editor "getValue")))))))
@@ -71,7 +71,7 @@
           (when target (reset! target content-ref))
           (when (opts "mode")
             (-> editor (oget "session") (ocall "setMode" (opts "mode"))))
-          (ocall editor "setValue" @content-ref)))})))
+          (ocall editor "setValue" (or (if target @content-ref content-ref) ""))))})))
 
 (defn with-value [f]
   (fn [e]
