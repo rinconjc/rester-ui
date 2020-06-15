@@ -34,6 +34,7 @@ header, main, footer {
     /* padding-right: 10px; */
 }
 .menu-items a{
+    width: 100%;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
