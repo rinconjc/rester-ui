@@ -1,0 +1,26 @@
+/* theme */
+body{
+    background-color: #263238;
+    color:white;
+}
+input {
+    color: white;
+}
+.tabs {
+    background-color: #262938  !important; /*#26a69a */
+}
+.tabs .tab a {
+    color: white !important;
+}
+.sidenav{
+    background-color: #263238 !important;
+}
+.sidenav li > a{
+    color: white !important;
+}
+.collapsible-body{
+    background-color: #263238 !important;
+}
+/* li.active{ */
+/*     background-color: rgb(38,50,56,0.1) !important; */
+/* } */

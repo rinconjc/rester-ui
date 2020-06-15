@@ -39,3 +39,7 @@ header, main, footer {
     overflow: hidden;
     white-space: nowrap;
 }
+
+.danger {
+    color: #e57373;
+}

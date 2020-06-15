@@ -46,6 +46,12 @@
         deps (set/union (:deps t) (:var-deps t))]
     (apply set/union deps (map (partial dependent-tests tests) deps))))
 
+(defn stringify [body]
+  (when body
+    (if (string? body)
+      body
+      (js/JSON.stringify (clj->js body) nil 1) ) ))
+
 (defn do-execute-tests [tests profile]
   (http/POST "/exec-tests"
              :params {:test-cases tests :profile profile}
@@ -55,7 +61,9 @@
                         (loop [tests (:tests @app-state)
                                [x & xs] results]
                           (if x
-                            (recur (update tests (:id x) assoc :result x) xs)
+                            (recur (update tests (:id x) assoc
+                                           :result (-> x (update :body stringify )
+                                                       (update-in [:response :body] stringify))) xs)
                             (swap! app-state assoc :tests tests))))
              :error-handler (partial handle-http-error "Failed running tests!")))
 
