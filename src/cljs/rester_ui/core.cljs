@@ -25,7 +25,7 @@
     [:ul>li.header @(m/page-title)]]
    [u/with-init
     [:ul#slide-out.sidenav.sidenav-fixed
-     [:li>h1.header "Rester-UI"]
+     [:li>h1.header "Rester"]
      [:li>div.divider]
      [:li
       [u/with-init
@@ -42,15 +42,15 @@
     #(ocall js/M.Sidenav "init" %)]])
 
 (defn home-page []
-  [:h1 "Rester UI"])
+  [:h1 "Rester"])
 
 (defn test-case-page []
   (println "test-case-page")
   [v/test-view @(r/track m/active-test)])
 
 (def routes
-  [["/" {:name :home :view #'home-page :title "Rester UI"}]
-   ["/test-case/:id" {:name :test-case :view #'test-case-page :title "New Test Case"
+  [["/" {:name :home :view #'home-page :title "Rester"}]
+   ["/test-case/:id" {:name :test-case :view #'test-case-page :title "Rester"
                       :parameters {:path {:id int?}}
                       :init (fn[{{id :id} :path-params}]
                               (h/set-active-test! (js/parseInt id)))}]])

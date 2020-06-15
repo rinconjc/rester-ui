@@ -62,11 +62,11 @@
          [:div.collapsible-body>div.padded>ul.menu-items
           (for [t tests] ^{:key (:name t)}
             [:li>a {:href (str "#/test-case/" (:id t))
-                              :title (:name t)} (:name t)])]])]
+                    :title (:name t)} (:name t)])]])]
      #(ocall js/M.Collapsible "init" % #js{:accordion false})]]])
 
 (defn button [icon title on-click]
-  [:a.red-text.text-lighten-3 {:href "#!" :on-click on-click :title title} [:i.material-icons icon]])
+  [:a.link {:href "#!" :on-click on-click :title title} [:i.material-icons icon]])
 
 (defn tuples-form [label entries]
   [:div.row
@@ -84,15 +84,10 @@
      {:href "#!" :on-click (u/no-default swap! entries (fnil conj []) ["" ""])}
      [:i.material-icons "add"]]]])
 
-(defn body-form [value-ref]
-  (println "rendering body-form")
-  (r/with-let [initial @value-ref]
-    [:div.row
-     [:div.input-field.col.s12
-      [u/with-init
-       [:div.code initial]
-       #(let [editor (js/ace.edit % #js{"mode" "ace/mode/json"})]
-          (ocall editor "on" "change" (fn[_] (reset! value-ref (ocall editor "getValue")))))]]]))
+(defn body-form [value-ref mime]
+  [:div.row
+   [:div.input-field.col.s12
+    [u/code-editor value-ref "mode" (u/editor-mode mime)]]])
 
 (defn expected-form [expect]
   [:div.row
@@ -103,7 +98,7 @@
    [:div.col.s12>h6 "Headers"
     [tuples-form "Header" (r/cursor (u/map-as-vector expect) [:headers])]]
    [:div.col.s12>h6 "Body"
-    [body-form (r/cursor expect [:body])]]])
+    [body-form (r/cursor expect [:body]) (m/content-type (:headers @expect))]]])
 
 (defn options-form [opts]
   [:div.row
@@ -125,47 +120,45 @@
 
 (defn result-view [result]
   (when result
-    [:div.row
-     (cond
-       (:success result)
-       [:div.col.s12>h5.green-text [:i.material-icons.left "check_circle"] "Success"]
-       (:error result)
-       [:div.col.s12
-        [:h5.red-text [:i.material-icons.left "cancel_circle"] "Error"]
-        [:span (:error result)]]
-       )
+    [:div
+     [:div.row
+      (cond
+        (:success result)
+        [:div.col.s12>h5.green-text [:i.material-icons.left "check_circle"] "Success"]
+        (:error result)
+        [:div.col.s12
+         [:h5.danger [:i.material-icons.left "cancel_circle"] "Error"]
+         [:span.danger (:error result)]])]
 
-     [:div.col.s12>h5 "Request:"]
-     [:div.col.s12 [:span.verb (:verb result)] " " (:url result)]
-     [:div
-      (doall
-       (for [[i [h v]] (map-indexed vector (:headers result))] ^{:key i}
-         [:div.col.s12 [:b h " : "] v]))]
+     [:div.row
+      [:div.col.s12>h5 "Request:"]
+      [:div.col.s12 [:span.verb (:verb result)] " " (:url result)]]
+
+     (when (:headers result)
+       [:div.row
+        (doall
+         (for [[i [h v]] (map-indexed vector (:headers result))] ^{:key i}
+           [:div.col.s12 [:b h " : "] v]))])
 
      (when (:body result)
-       [:div.col.s12
-        [:code (:body result)]])
+       [:div.row
+        [:div.col.s12
+         [u/code-editor (:body result) "mode" (u/editor-mode (m/content-type (:headers result)))]]])
 
-     (when (:body result)
-       [:div.col.s12>h6 "Body"
-        [:code (:body result)]])
-     [:div.col.s12>h5 "Response:"]
-     [:div
-      [:div.col.s12 "HTTP/1.1 " (get-in result [:response :status])]
+     [:div.row
+      [:div.col.s12>h5 "Response:"]
+      [:div.col.s12 "HTTP/1.1 " (get-in result [:response :status])]]
+
+     [:div.row
       (doall
        (for [[i [h v]] (map-indexed vector (get-in result [:response :headers]))] ^{:key i}
          [:div.col.s12 [:b h " : "] v]))]
-     [:div.col.s12
-      [u/with-init
-       [:div.code (-> result
-                      (get-in [:response :body])
-                      (clj->js)
-                      (js/JSON.stringify nil 1))]
-       #(js/ace.edit % #js{"mode" "ace/mode/json"
-                           "readOnly" true
-                           "showLineNumbers" false
-                           "showPrintMargin" false
-                           "showGutter" false})]]]))
+
+     [:div.row
+      [:div.col.s12
+       [u/code-editor (get-in result [:response :body])
+        "mode" (u/editor-mode (m/content-type (get-in result [:responsse :headers])))
+        "readOnly" true "showGutter" false "showLineNumbers" false]]] ]))
 
 (defn test-view [test]
   [:div.row
@@ -186,20 +179,19 @@
    [:div#reqTab.col.s12
     [:div.row
      [:div.input-field.col.s12.m2
-      [u/with-init
-       [:select (u/with-binding test :verb)
+      [u/select-wrapper
+       [:select (u/with-binding {} test :verb keyword)
         (for [m m/http-verbs] ^{:key m}
-          [:option {:value m} (str/upper-case (name m))])]
-       #(ocall js/M.FormSelect "init" %)]]
+          [:option {:value m} (str/upper-case (name m))])]]]
      [:div.input-field.col.s12.m10
       [:input (u/with-binding {:type "text" :placeholder "URL"} test :url )]]
      [:div.col.s12>h6 "Headers"
       [tuples-form "Header" (r/cursor (u/map-as-vector test) [:headers])]]
      [:div.col.s12>h6 "Query Params"
       [tuples-form "Param" (r/cursor test [:params])]]
-     (when-not (#{"GET" "DELETE"} (:verb @test))
+     (when-not (#{:get :delete :options} (:verb @test))
        [:div.col.s12>h6 "Body"
-        [body-form (r/cursor test [:body])]])]]
+        [body-form (r/cursor test [:body]) (m/content-type (:headers @test)) ]])]]
    [:div#expectTab.col.s12
     [expected-form (r/cursor test [:expect])]]
    [:div#optsTab.col.s12
@@ -217,14 +209,13 @@
          [:h4 "Test Variables"]
          [:div.row
           [:div.input-field.col.s6
-           [u/with-init
+           [u/select-wrapper
             [:select#profile
              {:on-change (u/with-value #(reset! profile (m/get-profile %)))}
              [:option "Use Profile"]
              (doall
               (for [[i [n _]] (map-indexed vector (m/profiles))] ^{:key i}
-                [:option {:value n} n]))]
-            #(ocall js/M.FormSelect "init" %)]
+                [:option {:value n} n]))]]
            [:label {:for "profile"} "Profiles:"]]
           (doall
            (for [[i var] (map-indexed vector (:vars @vars))]^{:key i}
@@ -237,6 +228,8 @@
                      profile :name)]
            [:label.active {:for "profile"} "Save As"]]]]
         [:div.modal-footer
-         [:a.modal-close.btn.waves-effect.waves-red.red
+         [:a.modal-close.btn.waves-effect
           {:on-click #(h/save-input-vars @profile)} "Ok"]]]
-       #(-> js/M.Modal (ocall "init" %) (ocall "open" #js{"onCloseEnd" h/dismiss-vars-prompt}))])))
+       #(-> js/M.Modal
+            (ocall "init" % #js{"onCloseEnd" h/dismiss-vars-prompt})
+            (ocall "open"))])))

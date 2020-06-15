@@ -30,14 +30,11 @@
        (group-by :suite)))
 
 (defn active-test-id []
-  (println "active-test-id")
   (:active-test @app-state))
 
 (defn active-test []
-  (println "active-test")
   (let [active (r/track active-test-id)]
     (when @active
-      (println "active :" @active)
       (r/cursor app-state [:tests @active]))))
 
 (defn input-vars []
@@ -48,3 +45,8 @@
 
 (defn get-profile [name]
   (-> @app-state :profiles (get name)))
+
+(defn content-type [headers]
+  (when headers (or (headers "content-type") (headers "Content-Type"))))
+
+

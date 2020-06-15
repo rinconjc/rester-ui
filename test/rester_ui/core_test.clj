@@ -24,7 +24,7 @@
 
 (deftest test-specs
   (testing "test-cases spec works"
-    (is (nil? (s/explain-data ::core/test-exec-request  sample-test)))))
+    (is (nil? (s/explain-data ::core/exec-request  sample-test)))))
 
 (defn as-json [input]
   (some-> input slurp (cheshire.core/parse-string true) (log/spy)))
@@ -44,7 +44,7 @@
                         (mock/json-body sample-test)))
                :body as-json)))))
 
-(deftest load-tests
-  (testing "loading tests"
-    (is (like {:status 200}
-              (app (-> (mock/request :post "/load-tests")))))))
+;; (deftest load-tests
+;;   (testing "loading tests"
+;;     (is (like {:status 200}
+;;               (app (-> (mock/request :post "/load-tests")))))))
