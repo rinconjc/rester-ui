@@ -39,6 +39,15 @@ header, main, footer {
     white-space: nowrap;
 }
 
+.middle {
+    vertical-align: middle;
+}
+.success{
+    color:#4caf50;
+}
 .danger {
     color: #e57373;
+}
+.warning{
+    color: #ff6f00;
 }
