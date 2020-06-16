@@ -118,17 +118,27 @@
      [:input (u/with-binding {:type "checkbox"} opts :ignore)]
      [:span "Ignore"]]]])
 
+(defn result-icon [result]
+  (cond
+    (:success result) [:i.material-icons.middle.success "check_circle"]
+    (:error result) [:i.material-icons.middle.danger "cancel"]
+    (:failure result) [:i.material-icons.middle.warning "remove_circle"]))
+
 (defn result-view [result]
   (when result
     [:div
      [:div.row
       (cond
         (:success result)
-        [:div.col.s12>h5.green-text [:i.material-icons.left "check_circle"] "Success"]
+        [:div.col.s12>h5.success [:i.material-icons.left "check_circle"] "Success"]
         (:error result)
         [:div.col.s12
-         [:h5.danger [:i.material-icons.left "cancel_circle"] "Error"]
-         [:span.danger (:error result)]])]
+         [:h5.danger [:i.material-icons.left "cancel"] "Error"]
+         [:span.danger (:error result)]]
+        (:failure result)
+        [:div.col.s12
+         [:h5.warning [:i.material-icons.left "remove_circle"] "Failed"]
+         [:span.warning (:failure result)]])]
 
      [:div.row
       [:div.col.s12>h5 "Request:"]
@@ -143,7 +153,8 @@
      (when (:body result)
        [:div.row
         [:div.col.s12
-         [u/code-editor (:body result) "mode" (u/editor-mode (m/content-type (:headers result)))]]])
+         [u/code-editor (:body result) "mode" (u/editor-mode (m/content-type (:headers result)))
+          "readOnly" true "showGutter" false "showLineNumbers" false]]])
 
      [:div.row
       [:div.col.s12>h5 "Response:"]
@@ -167,14 +178,14 @@
    [:div.input-field.col.s3
     [:button.waves-effect.waves-light.btn.right
      {:href "#!" :on-click #(h/execute-test (:id @test))}
-     [:i.material-icons.right "play_arrow"] "Execute"]]
+     [:i.material-icons.right "play_arrow"] "Run"]]
    [:div.col.s12
     [u/with-init
      [:ul.tabs.z-depth-1
       [:li.tab.col.s3>a {:href "#reqTab"} "Request"]
       [:li.tab.col.s3>a {:href "#expectTab"} "Expect"]
       [:li.tab.col.s3>a {:href "#optsTab"} "Options"]
-      [:li.tab.col.s3>a {:href "#respTab"} "Result"]]
+      [:li.tab.col.s3>a {:href "#respTab"} [result-icon (:result @test)] "Result"]]
      #(ocall js/M.Tabs "init" %)]]
    [:div#reqTab.col.s12
     [:div.row
