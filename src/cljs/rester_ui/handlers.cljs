@@ -50,21 +50,26 @@
   (when body
     (if (string? body)
       body
-      (js/JSON.stringify (clj->js body) nil 1) ) ))
+      (js/JSON.stringify (clj->js body) nil 1))))
+
+(defn merge-results [results]
+  (loop [tests (:tests @app-state)
+         [x & xs] results]
+    (if x
+      (recur (update tests (:id x) assoc
+                     :result (as-> x result
+                               (update result :body stringify)
+                               (if (:response result)
+                                 (update-in result [:response :body] stringify)
+                                 result))) xs)
+      (swap! app-state assoc :tests tests))))
 
 (defn do-execute-tests [tests profile]
   (http/POST "/exec-tests"
              :params {:test-cases tests :profile profile}
              :format :json
              :response-format :json :keywords? true
-             :handler (fn [results]
-                        (loop [tests (:tests @app-state)
-                               [x & xs] results]
-                          (if x
-                            (recur (update tests (:id x) assoc
-                                           :result (-> x (update :body stringify )
-                                                       (update-in [:response :body] stringify))) xs)
-                            (swap! app-state assoc :tests tests))))
+             :handler merge-results
              :error-handler (partial handle-http-error "Failed running tests!")))
 
 (defn prompt-for-input-vars! [id vars]
