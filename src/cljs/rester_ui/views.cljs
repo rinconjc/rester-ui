@@ -6,8 +6,18 @@
             [rester-ui.utils :as u]
             [clojure.string :as str]))
 
-(defn test-case-edit [test-case]
-  )
+(defn result-icon [result]
+  (cond
+    (:success result) [:i.material-icons.middle.success "check_circle"]
+    (:error result) [:i.material-icons.middle.danger "cancel"]
+    (:failure result) [:i.material-icons.middle.warning "remove_circle"]
+    (some? result) [:i.material-icons.middle "not_interested"]))
+
+(defn result-class [result]
+  (cond (:success result) "success"
+        (:error result) "danger"
+        (:failure result) "warning"))
+
 
 (defn open-tests []
   (r/with-let [form (atom {})]
@@ -62,7 +72,8 @@
          [:div.collapsible-body>div.padded>ul.menu-items
           (for [t tests] ^{:key (:id t)}
             [:li>a {:href (str "#/test-case/" (:id t))
-                    :title (:name t)} (:name t)])]])]
+                    :title (:name t)}
+             [:span {:class (result-class (:result t))} [result-icon (:result t)] (:name t) ]])]])]
      #(ocall js/M.Collapsible "init" % #js{:accordion false})]]])
 
 (defn button [icon title on-click]
@@ -118,13 +129,6 @@
      [:input (u/with-binding {:type "checkbox"} opts :ignore)]
      [:span "Ignore"]]]])
 
-(defn result-icon [result]
-  (cond
-    (:success result) [:i.material-icons.middle.success "check_circle"]
-    (:error result) [:i.material-icons.middle.danger "cancel"]
-    (:failure result) [:i.material-icons.middle.warning "remove_circle"]
-    :else [:i.material-icons.middle "not_interested"]))
-
 (defn result-view [result]
   (when result
     [:div
@@ -143,7 +147,7 @@
         :else
         [:div.col.s12 [:span.warning "Not executed due to dependent test failures"]])]
 
-     (when (:response result)
+     (when (some result [:success :error :failure])
        [:div
         [:div.row
          [:div.col.s12>h5 "Request:"]

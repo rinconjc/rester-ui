@@ -47,6 +47,12 @@ a.link {
 .collapsible-body{
     background-color: #212121 !important;
 }
+.keyboard-focused .collapsible-header:focus{
+    background-color: rgba(100,100,100,0.2) !important;
+}
+.sidenav .collapsible-header:hover{
+    background-color: rgba(100,100,100,0.2) !important;
+}
 .dropdown-content{
     background-color: #212121 !important;
 }
