@@ -6,8 +6,18 @@
             [rester-ui.utils :as u]
             [clojure.string :as str]))
 
-(defn test-case-edit [test-case]
-  )
+(defn result-icon [result]
+  (cond
+    (:success result) [:i.material-icons.middle.success "check_circle"]
+    (:error result) [:i.material-icons.middle.danger "cancel"]
+    (:failure result) [:i.material-icons.middle.warning "remove_circle"]
+    (some? result) [:i.material-icons.middle "not_interested"]))
+
+(defn result-class [result]
+  (cond (:success result) "success"
+        (:error result) "danger"
+        (:failure result) "warning"))
+
 
 (defn open-tests []
   (r/with-let [form (atom {})]
@@ -60,9 +70,10 @@
         [:li.menu-items
          [:a.collapsible-header suite]
          [:div.collapsible-body>div.padded>ul.menu-items
-          (for [t tests] ^{:key (:name t)}
+          (for [t tests] ^{:key (:id t)}
             [:li>a {:href (str "#/test-case/" (:id t))
-                    :title (:name t)} (:name t)])]])]
+                    :title (:name t)}
+             [:span {:class (result-class (:result t))} [result-icon (:result t)] (:name t) ]])]])]
      #(ocall js/M.Collapsible "init" % #js{:accordion false})]]])
 
 (defn button [icon title on-click]
@@ -118,12 +129,6 @@
      [:input (u/with-binding {:type "checkbox"} opts :ignore)]
      [:span "Ignore"]]]])
 
-(defn result-icon [result]
-  (cond
-    (:success result) [:i.material-icons.middle.success "check_circle"]
-    (:error result) [:i.material-icons.middle.danger "cancel"]
-    (:failure result) [:i.material-icons.middle.warning "remove_circle"]))
-
 (defn result-view [result]
   (when result
     [:div
@@ -138,38 +143,37 @@
         (:failure result)
         [:div.col.s12
          [:h5.warning [:i.material-icons.left "remove_circle"] "Failed"]
-         [:span.warning (:failure result)]])]
+         [:span.warning (:failure result)]]
+        :else
+        [:div.col.s12 [:span.warning "Not executed due to dependent test failures"]])]
 
-     [:div.row
-      [:div.col.s12>h5 "Request:"]
-      [:div.col.s12 [:span.verb (:verb result)] " " (:url result)]]
-
-     (when (:headers result)
-       [:div.row
-        (doall
-         (for [[i [h v]] (map-indexed vector (:headers result))] ^{:key i}
-           [:div.col.s12 [:b h " : "] v]))])
-
-     (when (:body result)
-       [:div.row
-        [:div.col.s12
-         [u/code-editor (:body result) "mode" (u/editor-mode (m/content-type (:headers result)))
-          "readOnly" true "showGutter" false "showLineNumbers" false]]])
-
-     [:div.row
-      [:div.col.s12>h5 "Response:"]
-      [:div.col.s12 "HTTP/1.1 " (get-in result [:response :status])]]
-
-     [:div.row
-      (doall
-       (for [[i [h v]] (map-indexed vector (get-in result [:response :headers]))] ^{:key i}
-         [:div.col.s12 [:b h " : "] v]))]
-
-     [:div.row
-      [:div.col.s12
-       [u/code-editor (get-in result [:response :body])
-        "mode" (u/editor-mode (m/content-type (get-in result [:responsse :headers])))
-        "readOnly" true "showGutter" false "showLineNumbers" false]]] ]))
+     (when (some result [:success :error :failure])
+       [:div
+        [:div.row
+         [:div.col.s12>h5 "Request:"]
+         [:div.col.s12 [:span.verb (:verb result)] " " (:url result)]]
+        (when (:headers result)
+          [:div.row
+           (doall
+            (for [[i [h v]] (map-indexed vector (:headers result))] ^{:key i}
+              [:div.col.s12 [:b h " : "] v]))])
+        (when (:body result)
+          [:div.row
+           [:div.col.s12
+            [u/code-editor (:body result) "mode" (u/editor-mode (m/content-type (:headers result)))
+             "readOnly" true "showGutter" false "showLineNumbers" false]]])
+        [:div.row
+         [:div.col.s12>h5 "Response:"]
+         [:div.col.s12 "HTTP/1.1 " (get-in result [:response :status])]]
+        [:div.row
+         (doall
+          (for [[i [h v]] (map-indexed vector (get-in result [:response :headers]))] ^{:key i}
+            [:div.col.s12 [:b h " : "] v]))]
+        [:div.row
+         [:div.col.s12
+          [u/code-editor (get-in result [:response :body])
+           "mode" (u/editor-mode (m/content-type (get-in result [:responsse :headers])))
+           "readOnly" true "showGutter" false "showLineNumbers" false]]]])]))
 
 (defn test-view [test]
   [:div.row
@@ -185,7 +189,8 @@
       [:li.tab.col.s3>a {:href "#reqTab"} "Request"]
       [:li.tab.col.s3>a {:href "#expectTab"} "Expect"]
       [:li.tab.col.s3>a {:href "#optsTab"} "Options"]
-      [:li.tab.col.s3>a {:href "#respTab"} [result-icon (:result @test)] "Result"]]
+      (when (:result @test)
+        [:li.tab.col.s3>a {:href "#respTab"} [result-icon (:result @test)] "Result"])]
      #(ocall js/M.Tabs "init" %)]]
    [:div#reqTab.col.s12
     [:div.row

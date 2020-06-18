@@ -44,7 +44,7 @@ header, main, footer {
     vertical-align: middle;
 }
 .success{
-    color:#4caf50;
+    color:#4caf50 !important;
 }
 .danger {
     color: #e57373;
