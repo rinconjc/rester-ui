@@ -32,9 +32,10 @@
        [:ul.collapsible.collapsible-expandable
         [:li
          [:a.collapsible-header {:href "#!"} "Profiles"
-          [:i.material-icons.right {:title "Open profiles"
-                                    :on-click #(do (js/console.log "clicked!"))} "folder_open"]
-          [:i.material-icons.right {:title "Add profile"} "library_add"]]
+          [:span.right
+           [:i.material-icons {:title "Open profiles"
+                                     :on-click #(do (js/console.log "clicked!"))} "folder_open"]
+           [:i.material-icons {:title "Add profile"} "library_add"]]]
          [:div.collapsible-body>ul]]
         [:li>div.divider]
         [v/test-suites-nav]]

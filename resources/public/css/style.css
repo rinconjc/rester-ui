@@ -7,13 +7,14 @@ header, main, footer {
         padding-left: 0;
     }
 }
-/* some style */
-.top-nav{
-  height: 110px;
-  box-shadow: none;
-  border-bottom: 1px solid rgba(0,0,0,0.14);
-  /* background-color: transparent; */
+
+@media only screen and (min-width: 601px) {
+    nav, nav .nav-wrapper i, nav a.sidenav-trigger, nav a.sidenav-trigger i {
+        height:48px !important;
+        line-height:48px !important;
+    }
 }
+/* some style */
 .padded {
   padding-left: 15px;
 }
@@ -43,7 +44,7 @@ header, main, footer {
     vertical-align: middle;
 }
 .success{
-    color:#4caf50 !important;
+    color:#4caf50;
 }
 .danger {
     color: #e57373;
