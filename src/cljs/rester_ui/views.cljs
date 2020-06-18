@@ -57,12 +57,14 @@
 (defn test-suites-nav []
   [:li
    [:a.collapsible-header "Test Suites"
-    [:i.material-icons.right.modal-trigger
-     {:title "Open Test Suites" :data-target "open-suite"
-      :on-click #(do (js/console.log "clicked!"))} "folder_open"]
-    [:i.material-icons.right
-     {:title "Add Test Suite"
-      :on-click #(u/no-default h/show :test-suite {})} "library_add"]]
+    [:span.right
+     [:i.material-icons.modal-trigger
+      {:title "Open Test Suites" :data-target "open-suite"
+       :on-click #(do (js/console.log "clicked!"))} "folder_open"]
+     [:i.material-icons
+      {:title "Add Test Suite"
+       :on-click #(u/no-default h/show :test-suite {})} "library_add"]
+     [:i.material-icons {:title "Run All"} "play_arrow"]]]
    [:div.collapsible-body
     [u/with-init
      [:ul.collapsible.expandable
