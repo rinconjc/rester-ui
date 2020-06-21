@@ -63,8 +63,10 @@
        :on-click #(do (js/console.log "clicked!"))} "folder_open"]
      [:i.material-icons
       {:title "Add Test Suite"
-       :on-click #(u/no-default h/show :test-suite {})} "library_add"]
-     [:i.material-icons {:title "Run All"} "play_arrow"]]]
+       :on-click (u/no-default h/show :test-suite {})} "library_add"]
+     [:i.material-icons
+      {:title "Run All"
+       :on-click (u/no-default h/execute-test :all)} "play_arrow"]]]
    [:div.collapsible-body
     [u/with-init
      [:ul.collapsible.expandable
