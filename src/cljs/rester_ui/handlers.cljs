@@ -108,3 +108,5 @@
   (let [test (get-in @app-state [:prompt-for-input-vars :test-id])]
     (dismiss-vars-prompt)
     (execute-test test profile)))
+
+(defn show-open-profile [])
