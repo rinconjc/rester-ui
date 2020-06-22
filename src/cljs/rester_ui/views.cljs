@@ -42,6 +42,16 @@
    [open-tests]
    #(ocall js/M.Modal "init" %)])
 
+(defn open-profile []
+  (r/with-let [show-dialog (m/want-open-profile?)]
+    (when @show-dialog
+      [u/with-init
+       [:div.modal
+        [:div.modal-content
+         [:h4 "Open Profile"]]
+        [:div.modal-footer]]
+       #(ocall js/M.Modal "init" %)] ) ))
+
 (defn error-popup []
   (r/with-let [error (m/error)]
     (when @error

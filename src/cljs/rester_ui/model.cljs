@@ -49,4 +49,6 @@
 (defn content-type [headers]
   (when headers (or (headers "content-type") (headers "Content-Type"))))
 
+(defn want-open-profile? []
+  (r/cursor app-state [:want-open-profile]))
 

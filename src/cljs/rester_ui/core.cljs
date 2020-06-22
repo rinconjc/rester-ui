@@ -34,7 +34,7 @@
          [:a.collapsible-header {:href "#!"} "Profiles"
           [:span.right
            [:i.material-icons {:title "Open profiles"
-                               :on-click #(do (js/console.log "clicked!"))} "folder_open"]
+                               :on-click (u/no-default h/show-open-profile)} "folder_open"]
            [:i.material-icons {:title "Add profile"} "library_add"]]]
          [:div.collapsible-body>ul]]
         [:li>div.divider]
