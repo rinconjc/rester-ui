@@ -38,6 +38,13 @@
     (fn [this]
       (mount-fn (r/dom-node this)))}))
 
+(defn modal [attrs content]
+  [with-init
+   content
+   #(-> js/M.Modal
+        (ocall "init" % #js{"onCloseEnd" (:on-close attrs)})
+        (ocall "open"))])
+
 (defn select-wrapper [select]
   [with-init select  #(ocall js/M.FormSelect "init" %)
    :did-update
@@ -76,6 +83,10 @@
 (defn with-value [f]
   (fn [e]
     (-> (oget e "target") (oget "value") f)))
+
+(defn with-file [f]
+  (fn [e]
+    (f (-> (oget e "target") (oget "files") (aget 0)))))
 
 (defn with-binding
   ([form path] (with-binding {} form path identity))

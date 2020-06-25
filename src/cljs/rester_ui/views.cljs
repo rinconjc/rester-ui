@@ -43,14 +43,24 @@
    #(ocall js/M.Modal "init" %)])
 
 (defn open-profile []
-  (r/with-let [show-dialog (m/want-open-profile?)]
-    (when @show-dialog
-      [u/with-init
+  (r/with-let [show (r/track m/show-modal? :open-profile)
+               file (atom nil)]
+    (when @show
+      [u/modal {:on-close #(h/hide-modal :open-profile )}
        [:div.modal
         [:div.modal-content
-         [:h4 "Open Profile"]]
-        [:div.modal-footer]]
-       #(ocall js/M.Modal "init" %)] ) ))
+         [:h4 "Open Profiles"]
+         [:form.col.s12
+          [:div.row
+           [:div.file-field.input-field
+            [:div.btn
+             [:span "Profiles File"]
+             [:input {:type "file" :on-change (u/with-file #(reset! file %))}]]
+            [:div.file-path-wrapper
+             [:input.file-path.validate {:type "text"}]]]]]]
+        [:div.modal-footer
+         [:a.btn.modal-close.waves-effect.waves-green {:on-click #(h/load-profiles @file)} "Open"] " "
+         [:a.modal-close.btn.waves-effect.waves-green "Close"]]]])))
 
 (defn error-popup []
   (r/with-let [error (m/error)]
