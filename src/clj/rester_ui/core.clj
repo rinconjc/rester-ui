@@ -59,7 +59,15 @@
                             :responses {200 {:body ::exec-response}}
                             :handler (fn [{{{:keys [test-cases profile]} :body} :parameters :as req}]
                                        {:status 200
-                                        :body (rester/exec-tests test-cases (or profile {}))})}}]]
+                                        :body (rester/exec-tests test-cases (or profile {}))})}}]
+
+     ["/profiles" {:post {:parameters {:multipart {:file multipart/temp-file-part}}
+                          :responses {200 {:body ::res/config}}
+                          :handler (fn [{{{file :file} :multipart} :parameters}]
+                                     (log/info "loading profiles file" file)
+                                    {:status 200
+                                     :body (rester/load-profiles (.getPath (:tempfile file)))})}}]]
+
     {:exception pretty/exception
      :validate rs/validate
      :data {:coercion custom-coercion

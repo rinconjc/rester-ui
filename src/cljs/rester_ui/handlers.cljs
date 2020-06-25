@@ -109,4 +109,16 @@
     (dismiss-vars-prompt)
     (execute-test test profile)))
 
-(defn show-open-profile [])
+(defn show-modal [modal]
+  (swap! app-state assoc-in [:modals modal] true))
+
+(defn hide-modal [modal]
+  (swap! app-state assoc-in [:modals modal] false))
+
+(defn load-profiles [file]
+  (http/POST "/profiles"
+             :body (doto (js/FormData.) (.append "file" file))
+             :response-format :json :keywords? true
+             :handler #(swap! app-state assoc :profiles
+                              (st/coerce ::rs/config % st/json-transformer))
+             :error-handler (partial handle-http-error "Failed Loading Profiles")))

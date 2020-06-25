@@ -17,7 +17,7 @@
   (:page @app-state))
 
 (defn page-title []
-  (r/cursor app-state [:page :data :title]))
+  (get-in @app-state [:page :data :title]))
 
 (defn error []
   (r/cursor app-state [:error]))
@@ -49,6 +49,6 @@
 (defn content-type [headers]
   (when headers (or (headers "content-type") (headers "Content-Type"))))
 
-(defn want-open-profile? []
-  (r/cursor app-state [:want-open-profile]))
+(defn show-modal? [modal]
+  (get-in @app-state [:modals modal]))
 

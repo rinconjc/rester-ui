@@ -22,7 +22,7 @@
   [:header
    [:nav>div.nav-wrapper
     [:a.sidenav-trigger {:href "#" :data-target "slide-out"} [:i.material-icons "menu"]]
-    [:ul>li.header @(m/page-title)]]
+    [:ul>li.header @(r/track m/page-title)]]
    [u/with-init
     [:ul#slide-out.sidenav.sidenav-fixed
      [:li>h1.header "Rester"]
@@ -31,10 +31,10 @@
       [u/with-init
        [:ul.collapsible.collapsible-expandable
         [:li
-         [:a.collapsible-header {:href "#!"} "Profiles"
+         [:a.collapsible-header "Profiles"
           [:span.right
            [:i.material-icons {:title "Open profiles"
-                               :on-click (u/no-default h/show-open-profile)} "folder_open"]
+                               :on-click (u/no-default h/show-modal :open-profile)} "folder_open"]
            [:i.material-icons {:title "Add profile"} "library_add"]]]
          [:div.collapsible-body>ul]]
         [:li>div.divider]
@@ -70,6 +70,7 @@
     [v/open-suite-modal]
     [v/error-popup]
     [v/input-vars-prompt]
+    [v/open-profile]
     [:footer]]])
 
 (defn mount [el]
