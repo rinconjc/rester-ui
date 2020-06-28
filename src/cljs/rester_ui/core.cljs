@@ -36,7 +36,7 @@
            [:i.material-icons {:title "Open profiles"
                                :on-click (u/no-default h/show-modal :open-profile)} "folder_open"]
            [:i.material-icons {:title "Add profile"} "library_add"]]]
-         [:div.collapsible-body>ul]]
+         [v/profiles-nav]]
         [:li>div.divider]
         [v/test-suites-nav]]
        #(ocall js/M.Collapsible "init" %)]]]
@@ -49,12 +49,19 @@
   (println "test-case-page")
   [v/test-view @(r/track m/active-test)])
 
+(defn profile-page []
+  [v/profile-view @(r/track m/get-active-profile)])
+
 (def routes
   [["/" {:name :home :view #'home-page :title "Rester"}]
-   ["/test-case/:id" {:name :test-case :view #'test-case-page :title "Rester"
+   ["/test-case/:id" {:name :test-case :view #'test-case-page :title "Test Case"
                       :parameters {:path {:id int?}}
                       :init (fn[{{id :id} :path-params}]
-                              (h/set-active-test! (js/parseInt id)))}]])
+                              (h/set-active-test! (js/parseInt id)))}]
+   ["/profile/:name" {:name :profile :view #'profile-page :title "Profile"
+                      :parameters {:path {:name string?}}
+                      :init (fn [{{name :name} :path-params}]
+                              (h/set-active-profile! name))}]])
 
 (defn main []
   (r/with-let [page (r/track m/active-page)]
