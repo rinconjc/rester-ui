@@ -74,6 +74,19 @@
          [:a.modal-close.btn.waves-effect.waves-red.red {:on-click h/dismiss-error} "Ok"]]]
        #(-> js/M.Modal (ocall "init" %) (ocall "open"))])))
 
+(defn profiles-nav []
+  [:div.collapsible-body>ul
+   (for [[profile _] @(r/track m/profiles)] ^{:key profile}
+     [:li>a {:href (str "#/profile/" (name profile)) :title profile} profile])])
+
+(defn profile-view [profile]
+  (doall
+   (for [[i var] (:bindings profile)]^{:key i}
+     [:div.input-field.col.s12
+      [:input (u/with-binding {:type "text" :id var :placeholder var}
+                profile [:bindings var])]
+      [:label.active {:for var} var]])))
+
 (defn test-suites-nav []
   [:li
    [:a.collapsible-header "Test Suites"

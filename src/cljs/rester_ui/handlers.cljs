@@ -122,3 +122,10 @@
              :handler #(swap! app-state assoc :profiles
                               (st/coerce ::rs/config % st/json-transformer))
              :error-handler (partial handle-http-error "Failed Loading Profiles")))
+
+(defn set-active-profile! [name]
+  (swap! app-state assoc :active-profile (keyword name)))
+
+(defn get-active-profile []
+  (when-let [profile (:active-profile @app-state)]
+    (get-in @app-state [:profiles profile])))
