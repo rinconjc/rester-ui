@@ -80,12 +80,15 @@
      [:li>a {:href (str "#/profile/" (name profile)) :title profile} profile])])
 
 (defn profile-view [profile]
-  (doall
-   (for [[i var] (:bindings profile)]^{:key i}
-     [:div.input-field.col.s12
-      [:input (u/with-binding {:type "text" :id var :placeholder var}
-                profile [:bindings var])]
-      [:label.active {:for var} var]])))
+  (r/with-let [form (atom profile)]
+    [:div.card
+     [:div.card-content
+      (doall
+       (for [v (keys (:bindings profile))]^{:key v}
+         [:div.input-field.col.s12
+          [:input (u/with-binding {:type "text" :id v :placeholder v}
+                    form [:bindings v])]
+          [:label.active {:for v} v]]))]]))
 
 (defn test-suites-nav []
   [:li

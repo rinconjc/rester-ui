@@ -52,5 +52,7 @@
 (defn show-modal? [modal]
   (get-in @app-state [:modals modal]))
 
-
+(defn get-active-profile []
+  (when-let [profile (:active-profile @app-state)]
+    (get-in @app-state [:profiles profile])))
 
