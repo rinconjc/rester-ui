@@ -44,7 +44,7 @@
   (:profiles @app-state))
 
 (defn get-profile [name]
-  (-> @app-state :profiles (get name)))
+(-> @app-state :profiles (get (keyword name))))
 
 (defn content-type [headers]
   (when headers (or (headers "content-type") (headers "Content-Type"))))

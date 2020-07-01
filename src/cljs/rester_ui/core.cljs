@@ -49,8 +49,8 @@
   (println "test-case-page")
   [v/test-view @(r/track m/active-test)])
 
-(defn profile-page []
-  [v/profile-view @(r/track m/get-active-profile)])
+(defn profile-page [params]
+  [v/profile-view @(r/track m/get-active-profile) (:name params)])
 
 (def routes
   [["/" {:name :home :view #'home-page :title "Rester"}]
@@ -65,9 +65,9 @@
 
 (defn main []
   (r/with-let [page (r/track m/active-page)]
-    (println "main...")
-    [:main>div.container
-     [(or (get-in @page [:data :view]) :div)]]))
+    (when @page
+      [:main>div.container
+       [(get-in @page [:data :view]) (:path-params @page)]])))
 
 (defn current-page []
   [:div
@@ -86,10 +86,7 @@
 (defn mount-app-element []
   (rfe/start! (rf/router routes)
               (fn[match hist]
-                (m/set-active-page! match)
-                ;; (u/log "match:" match)
-                ;; (h/on-page-start match)
-                )
+                (m/set-active-page! match))
               {})
   (when-let [el (get-app-element)]
     (mount el)))

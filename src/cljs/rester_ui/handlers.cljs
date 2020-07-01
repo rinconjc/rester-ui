@@ -77,12 +77,12 @@
 
 (defn execute-all [profile]
   (let [{:keys[runnable ignored skipped]} (ru/process-tests (:tests @app-state)
-                                                            (or (:active-profile @app-state) {}))
+                                                            (or profile {}))
         vars (set/difference (apply set/union (map :vars runnable))
                              (apply set/union (map (comp keys :extractors :options) runnable)))]
-    (if (and (seq vars) (not (or profile (:active-profile @app-state))))
+    (if (and (seq vars) (not profile))
       (prompt-for-input-vars! :all vars)
-      (do-execute-tests runnable (or profile (:active-profile @app-state))))))
+      (do-execute-tests runnable profile))))
 
 (defn execute-test
   ([id] (execute-test id nil))
@@ -91,13 +91,13 @@
      (execute-all profile)
      (let [test (nth (:tests @app-state) id)
            {:keys[runnable ignored skipped]} (ru/process-tests (:tests @app-state)
-                                                               (or (:active-profile @app-state) {}))
+                                                               (or profile {}))
            tests (into {} (for [t runnable] [(:id t) t]))
            vars (input-vars tests id)]
-       (if (and (seq vars) (not (or profile (:active-profile @app-state))))
+       (if (and (seq vars) (not profile))
          (prompt-for-input-vars! id vars)
          (do-execute-tests (conj (map tests (dependent-tests tests id)) test)
-                           (or profile (:active-profile @app-state))))))))
+                           profile))))))
 
 (defn dismiss-vars-prompt []
   (swap! app-state dissoc :prompt-for-input-vars))
@@ -126,4 +126,5 @@
 (defn set-active-profile! [name]
   (swap! app-state assoc :active-profile (keyword name)))
 
-
+(defn save-profile [name profile]
+  (swap! app-state assoc-in [:profiles (keyword name)] profile))

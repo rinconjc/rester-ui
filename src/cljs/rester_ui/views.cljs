@@ -79,17 +79,6 @@
    (for [[profile _] @(r/track m/profiles)] ^{:key profile}
      [:li>a {:href (str "#/profile/" (name profile)) :title profile} profile])])
 
-(defn profile-view [profile]
-  (r/with-let [form (atom profile)]
-    [:div.card
-     [:div.card-content
-      (doall
-       (for [v (keys (:bindings profile))]^{:key v}
-         [:div.input-field.col.s12
-          [:input (u/with-binding {:type "text" :id v :placeholder v}
-                    form [:bindings v])]
-          [:label.active {:for v} v]]))]]))
-
 (defn test-suites-nav []
   [:li
    [:a.collapsible-header "Test Suites"
@@ -168,6 +157,29 @@
     [:div.input-field.col.s12.m3>label
      [:input (u/with-binding {:type "checkbox"} opts :ignore)]
      [:span "Ignore"]]]])
+
+(defn profile-view [profile name]
+  (r/with-let [form (atom profile)]
+    [:div.card
+     [:div.card-content
+      [:span.card-title "Profile: " name]
+      [:div [:h6 "Variables" ]]
+      [:div.row
+       (doall
+        (for [v (keys (:bindings profile))]^{:key v}
+          [:div.col.s12
+           [:label.left v]
+           [:input (u/with-binding {:type "text" :id v :placeholder v}
+                     form [:bindings v])]]))]
+      [:div [:h6 "Headers" ]]
+      [tuples-form "Header" (r/cursor (u/map-as-vector form) [:headers])]
+      [:div [:h6 "Misc" ]]
+      [:div.row
+       [:div.col.s6
+        [:label "Skip"]
+        [:input (u/with-binding {:type "text" :id "skip"} form [:skip])]]]]
+     [:div.card-action
+      [:button.btn {:on-click #(h/save-profile name @form)} "Save"]]]))
 
 (defn result-view [result]
   (when result
