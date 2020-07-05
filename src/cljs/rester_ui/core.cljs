@@ -1,5 +1,6 @@
 (ns ^:figwheel-hooks rester-ui.core
-  (:require [goog.dom :as gdom]
+  (:require [clojure.string :as str]
+            [goog.dom :as gdom]
             [oops.core :refer [ocall]]
             [reagent.core :as r :refer [atom]]
             [reitit.frontend :as rf]
@@ -43,10 +44,16 @@
     #(ocall js/M.Sidenav "init" %)]])
 
 (defn home-page []
-  [:h1 "Rester"])
+  [:div
+   [:h2 "Start testing your RESTful API..."]
+   [v/edit-test-case {}]])
+
+(defn create-test-page []
+  [:div
+   [:h3 "Test a REST API"
+    ][v/edit-test-case {}]])
 
 (defn test-case-page []
-  (println "test-case-page")
   [v/test-view @(r/track m/active-test)])
 
 (defn profile-page [params]
@@ -58,6 +65,7 @@
                       :parameters {:path {:id int?}}
                       :init (fn[{{id :id} :path-params}]
                               (h/set-active-test! (js/parseInt id)))}]
+   ["/create-test" {:name :create-test :view #'create-test-page :title "Create Test"}]
    ["/profile/:name" {:name :profile :view #'profile-page :title "Profile"
                       :parameters {:path {:name string?}}
                       :init (fn [{{name :name} :path-params}]
