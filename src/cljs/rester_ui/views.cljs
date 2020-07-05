@@ -88,7 +88,7 @@
        :on-click #(do (js/console.log "clicked!"))} "folder_open"]
      [:i.material-icons
       {:title "Add Test Suite"
-       :on-click (u/no-default h/show :test-suite {})} "library_add"]
+       :on-click (u/no-default h/goto "#/create-test")} "library_add"]
      [:i.material-icons
       {:title "Run All"
        :on-click (u/no-default h/execute-test :all)} "play_arrow"]]]
@@ -301,3 +301,16 @@
        #(-> js/M.Modal
             (ocall "init" % #js{"onCloseEnd" h/dismiss-vars-prompt})
             (ocall "open"))])))
+
+(defn edit-test-case [test]
+  (r/with-let [test (atom test)]
+    [:div.card
+     [:div.card-content
+      [:div.row
+       [:div.col.s4.m2.input-field
+        [u/select-wrapper
+         [:select (u/with-binding {} test :verb keyword)
+          (for [m m/http-verbs] ^{:key m}
+            [:option {:value m} (str/upper-case (name m))])]]]
+       [:div.col.s8.m10.input-field
+        [:input (u/with-binding {:type "url" :placeholder "URL"} test :url)]]]]]))

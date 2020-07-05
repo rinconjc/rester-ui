@@ -6,7 +6,12 @@
             [rester.utils :as ru]
             [cljs.spec.alpha :as s]
             [spec-tools.core :as st]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [oops.core :refer [ocall oget]]))
+
+(defn goto [path]
+  (u/log "goto:" path)
+  (ocall js/location "assign" path))
 
 (defn show [view & args]
   (swap! app-state assoc :view view :view-args args))
