@@ -53,3 +53,8 @@ header, main, footer {
 .warning{
     color: #e57373;
 }
+
+.compact-inputs .col .input-field {
+    margin-top: 0.1rem !important;
+    margin-bottom: 0.1rem !important;
+}
