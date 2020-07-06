@@ -6,7 +6,12 @@
             [rester.utils :as ru]
             [cljs.spec.alpha :as s]
             [spec-tools.core :as st]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [oops.core :refer [ocall oget]]))
+
+(defn goto [path]
+  (u/log "goto:" path)
+  (ocall js/location "assign" path))
 
 (defn show [view & args]
   (swap! app-state assoc :view view :view-args args))
@@ -77,12 +82,12 @@
 
 (defn execute-all [profile]
   (let [{:keys[runnable ignored skipped]} (ru/process-tests (:tests @app-state)
-                                                            (or (:active-profile @app-state) {}))
+                                                            (or profile {}))
         vars (set/difference (apply set/union (map :vars runnable))
                              (apply set/union (map (comp keys :extractors :options) runnable)))]
-    (if (and (seq vars) (not (or profile (:active-profile @app-state))))
+    (if (and (seq vars) (not profile))
       (prompt-for-input-vars! :all vars)
-      (do-execute-tests runnable (or profile (:active-profile @app-state))))))
+      (do-execute-tests runnable profile))))
 
 (defn execute-test
   ([id] (execute-test id nil))
@@ -91,13 +96,13 @@
      (execute-all profile)
      (let [test (nth (:tests @app-state) id)
            {:keys[runnable ignored skipped]} (ru/process-tests (:tests @app-state)
-                                                               (or (:active-profile @app-state) {}))
+                                                               (or profile {}))
            tests (into {} (for [t runnable] [(:id t) t]))
            vars (input-vars tests id)]
-       (if (and (seq vars) (not (or profile (:active-profile @app-state))))
+       (if (and (seq vars) (not profile))
          (prompt-for-input-vars! id vars)
          (do-execute-tests (conj (map tests (dependent-tests tests id)) test)
-                           (or profile (:active-profile @app-state))))))))
+                           profile))))))
 
 (defn dismiss-vars-prompt []
   (swap! app-state dissoc :prompt-for-input-vars))
@@ -109,4 +114,22 @@
     (dismiss-vars-prompt)
     (execute-test test profile)))
 
-(defn show-open-profile [])
+(defn show-modal [modal]
+  (swap! app-state assoc-in [:modals modal] true))
+
+(defn hide-modal [modal]
+  (swap! app-state assoc-in [:modals modal] false))
+
+(defn load-profiles [file]
+  (http/POST "/profiles"
+             :body (doto (js/FormData.) (.append "file" file))
+             :response-format :json :keywords? true
+             :handler #(swap! app-state assoc :profiles
+                              (st/coerce ::rs/config % st/json-transformer))
+             :error-handler (partial handle-http-error "Failed Loading Profiles")))
+
+(defn set-active-profile! [name]
+  (swap! app-state assoc :active-profile (keyword name)))
+
+(defn save-profile [name profile]
+  (swap! app-state assoc-in [:profiles (keyword name)] profile))
