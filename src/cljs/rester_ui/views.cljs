@@ -43,14 +43,24 @@
    #(ocall js/M.Modal "init" %)])
 
 (defn open-profile []
-  (r/with-let [show-dialog (m/want-open-profile?)]
-    (when @show-dialog
-      [u/with-init
+  (r/with-let [show (r/track m/show-modal? :open-profile)
+               file (atom nil)]
+    (when @show
+      [u/modal {:on-close #(h/hide-modal :open-profile )}
        [:div.modal
         [:div.modal-content
-         [:h4 "Open Profile"]]
-        [:div.modal-footer]]
-       #(ocall js/M.Modal "init" %)] ) ))
+         [:h4 "Open Profiles"]
+         [:form.col.s12
+          [:div.row
+           [:div.file-field.input-field
+            [:div.btn
+             [:span "Profiles File"]
+             [:input {:type "file" :on-change (u/with-file #(reset! file %))}]]
+            [:div.file-path-wrapper
+             [:input.file-path.validate {:type "text"}]]]]]]
+        [:div.modal-footer
+         [:a.btn.modal-close.waves-effect.waves-green {:on-click #(h/load-profiles @file)} "Open"] " "
+         [:a.modal-close.btn.waves-effect.waves-green "Close"]]]])))
 
 (defn error-popup []
   (r/with-let [error (m/error)]
@@ -64,6 +74,11 @@
          [:a.modal-close.btn.waves-effect.waves-red.red {:on-click h/dismiss-error} "Ok"]]]
        #(-> js/M.Modal (ocall "init" %) (ocall "open"))])))
 
+(defn profiles-nav []
+  [:div.collapsible-body>ul
+   (for [[profile _] @(r/track m/profiles)] ^{:key profile}
+     [:li>a {:href (str "#/profile/" (name profile)) :title profile} profile])])
+
 (defn test-suites-nav []
   [:li
    [:a.collapsible-header "Test Suites"
@@ -73,7 +88,7 @@
        :on-click #(do (js/console.log "clicked!"))} "folder_open"]
      [:i.material-icons
       {:title "Add Test Suite"
-       :on-click (u/no-default h/show :test-suite {})} "library_add"]
+       :on-click (u/no-default h/goto "#/create-test")} "library_add"]
      [:i.material-icons
       {:title "Run All"
        :on-click (u/no-default h/execute-test :all)} "play_arrow"]]]
@@ -142,6 +157,29 @@
     [:div.input-field.col.s12.m3>label
      [:input (u/with-binding {:type "checkbox"} opts :ignore)]
      [:span "Ignore"]]]])
+
+(defn profile-view [profile name]
+  (r/with-let [form (atom profile)]
+    [:div.card
+     [:div.card-content
+      [:span.card-title "Profile: " name]
+      [:div [:h6 "Variables" ]]
+      [:div.row
+       (doall
+        (for [v (keys (:bindings profile))]^{:key v}
+          [:div.col.s12
+           [:label.left v]
+           [:input (u/with-binding {:type "text" :id v :placeholder v}
+                     form [:bindings v])]]))]
+      [:div [:h6 "Headers" ]]
+      [tuples-form "Header" (r/cursor (u/map-as-vector form) [:headers])]
+      [:div [:h6 "Misc" ]]
+      [:div.row
+       [:div.col.s6
+        [:label "Skip"]
+        [:input (u/with-binding {:type "text" :id "skip"} form [:skip])]]]]
+     [:div.card-action
+      [:button.btn {:on-click #(h/save-profile name @form)} "Save"]]]))
 
 (defn result-view [result]
   (when result
@@ -263,3 +301,16 @@
        #(-> js/M.Modal
             (ocall "init" % #js{"onCloseEnd" h/dismiss-vars-prompt})
             (ocall "open"))])))
+
+(defn edit-test-case [test]
+  (r/with-let [test (atom test)]
+    [:div.card
+     [:div.card-content
+      [:div.row
+       [:div.col.s4.m2.input-field
+        [u/select-wrapper
+         [:select (u/with-binding {} test :verb keyword)
+          (for [m m/http-verbs] ^{:key m}
+            [:option {:value m} (str/upper-case (name m))])]]]
+       [:div.col.s8.m10.input-field
+        [:input (u/with-binding {:type "url" :placeholder "URL"} test :url)]]]]]))
