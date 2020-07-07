@@ -10,12 +10,6 @@
             [rester-ui.utils :as u]
             [rester-ui.views :as v]))
 
-(defn multiply [a b] (* a b))
-
-
-;; define your app data so that it doesn't get over-written on reload
-(defonce app-state (atom {:text "Hello world!"}))
-
 (defn get-app-element []
   (gdom/getElement "app"))
 
@@ -45,12 +39,12 @@
 
 (defn home-page []
   [:div
-   [:h2 "Start testing your RESTful API..."]
+   [:h2 "Test your API"]
    [v/edit-test-case {}]])
 
 (defn create-test-page []
   [:div
-   [:h3 "Test a REST API"
+   [:h3 "Test Your Service ..."
     ][v/edit-test-case {}]])
 
 (defn test-case-page []
