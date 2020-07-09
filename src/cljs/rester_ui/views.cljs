@@ -109,7 +109,7 @@
   [:a.link {:href "#!" :on-click on-click :title title} [:i.material-icons icon]])
 
 (defn tuples-form [label entries]
-  [:div.row
+  [:div.row.compact-inputs
    (doall
     (for [[i [name value]] (map-indexed vector @entries)] ^{:key i}
       [:div.col.s12
