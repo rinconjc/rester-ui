@@ -317,8 +317,31 @@
        [:div.col.s8.m10.input-field
         [:input (u/with-binding {:type "url" :placeholder "URL"} test :url)]]
        (when (:url @test)
-         [:div.col.s12>h6 "Headers"
-          [tuples-form "Header" (r/cursor (u/map-as-vector test) [:headers])]])
-       (when (#{:post :put :patch} (:verb @test))
-         [:div.col.s12>h6 "Body"
-          [body-form (r/cursor test [:body]) (m/content-type (:headers @test)) ]])]]]))
+         [:div
+          [:div.col.s12
+           [u/with-init
+            [:ul.tabs.z-depth-1
+             [:li.tab.col.s3>a {:href "#reqTab"} "Request"]
+             [:li.tab.col.s3>a {:href "#expectTab"} "Expect"]
+             [:li.tab.col.s3>a {:href "#optsTab"} "Options"]
+             (when (:result @test)
+               [:li.tab.col.s3>a {:href "#respTab"} [result-icon (:result @test)] "Result"])]
+            #(ocall js/M.Tabs "init" %)]]
+          [:div#reqTab.col.s12
+           [:div.row
+            [:div.col.s12>h6 "Headers"
+             [tuples-form "Header" (r/cursor (u/map-as-vector test) [:headers])]]
+            [:div.col.s12>h6 "Query Params"
+             [tuples-form "Param" (r/cursor test [:params])]]
+            (when (#{:post :put :patch} (:verb @test))
+              [:div.col.s12>h6 "Body"
+               [body-form (r/cursor test [:body]) (m/content-type (:headers @test)) ]])]]
+          [:div#expectTab.col.s12
+           [expected-form (r/cursor test [:expect])]]
+          [:div#optsTab.col.s12
+           [options-form (r/cursor test [:options])]]
+          [:div#respTab.col.s12
+           [result-view (:result @test)]]])]]
+     (when (:url @test)
+       [:div.card-action
+        [:button.btn {:on-click #(h/run-test @test)} "Run"] [:button.btn.right "Save"]])]))
