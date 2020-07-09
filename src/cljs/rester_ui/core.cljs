@@ -44,8 +44,8 @@
 
 (defn create-test-page []
   [:div
-   [:h3 "Test Your Service ..."
-    ][v/edit-test-case {}]])
+   [:h3 "Test Your Service ..."]
+   [v/edit-test-case {:verb :get :expect {:status 200}}]])
 
 (defn test-case-page []
   [v/test-view @(r/track m/active-test)])

@@ -133,3 +133,14 @@
 
 (defn save-profile [name profile]
   (swap! app-state assoc-in [:profiles (keyword name)] profile))
+
+(defn run-test [test]
+  (u/log "running..." test)
+  (let [tests (:tests @app-state)
+        last-test (-> @app-state :tests last)
+        test (if (= "unsaved" last-test)
+               (merge last-test test)
+               (assoc test :suite "default" :name "unsaved"
+                     :id (-> last-test :id inc)))]
+    (swap! app-state assoc-in [:tests (:id test)] test)
+    (execute-test (:id test))))
