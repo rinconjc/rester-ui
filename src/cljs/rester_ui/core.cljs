@@ -40,12 +40,12 @@
 (defn home-page []
   [:div
    [:h2 "Test your API"]
-   [v/edit-test-case {}]])
+   [v/edit-test-case @(r/track m/adhoc-test )]])
 
 (defn create-test-page []
   [:div
    [:h3 "Test Your Service ..."]
-   [v/edit-test-case {:verb :get :expect {:status 200}}]])
+   [v/edit-test-case @(r/track m/adhoc-test )]])
 
 (defn test-case-page []
   [v/test-view @(r/track m/active-test)])
@@ -54,12 +54,14 @@
   [v/profile-view @(r/track m/get-active-profile) (:name params)])
 
 (def routes
-  [["/" {:name :home :view #'home-page :title "Rester"}]
+  [["/" {:name :home :view #'home-page :title "Rester"
+         :init (fn [_] (h/create-adhoc-test!))}]
    ["/test-case/:id" {:name :test-case :view #'test-case-page :title "Test Case"
                       :parameters {:path {:id int?}}
                       :init (fn[{{id :id} :path-params}]
                               (h/set-active-test! (js/parseInt id)))}]
-   ["/create-test" {:name :create-test :view #'create-test-page :title "Create Test"}]
+   ["/create-test" {:name :create-test :view #'create-test-page :title "Create Test"
+                    :init (fn [_] (h/create-adhoc-test!))}]
    ["/profile/:name" {:name :profile :view #'profile-page :title "Profile"
                       :parameters {:path {:name string?}}
                       :init (fn [{{name :name} :path-params}]
@@ -80,6 +82,7 @@
     [v/error-popup]
     [v/input-vars-prompt]
     [v/open-profile]
+    [v/save-test-modal]
     [:footer]]])
 
 (defn mount [el]
