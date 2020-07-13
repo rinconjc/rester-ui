@@ -1,9 +1,24 @@
 (ns rester-ui.model
   (:require [reagent.core :as r :refer [atom]]
             [rester-ui.utils :as u]
-            [rester.specs :as rs]))
+            [rester.specs :as rs]
+            [cljs.reader :as reader]
+            [oops.core :refer [ocall]]))
 
-(defonce app-state (atom {}))
+(defn restore-backup []
+  (u/log "restoring state...")
+  (some-> (js/localStorage.getItem "app-state")
+          (reader/read-string)))
+
+(defonce app-state (atom (or (restore-backup) {})))
+
+(defonce backup-state
+  (ocall js/window "addEventListener" "unload"
+         (fn [e]
+           (js/console.log "saved!...")
+           (ocall js/localStorage "setItem" "app-state"
+                  (pr-str (select-keys @app-state [:tests :profiles])))
+           (js/console.log "saved!"))))
 
 (def http-verbs rs/http-verbs)
 
@@ -37,6 +52,13 @@
     (when @active
       (r/cursor app-state [:tests @active]))))
 
+(defn adhoc-id []
+  (dec (count (:tests @app-state))))
+
+(defn adhoc-test []
+  (let [id (r/track adhoc-id)]
+    (r/cursor app-state [:tests @id])))
+
 (defn input-vars []
   (r/cursor app-state [:prompt-for-input-vars]))
 
@@ -44,7 +66,7 @@
   (:profiles @app-state))
 
 (defn get-profile [name]
-(-> @app-state :profiles (get (keyword name))))
+  (-> @app-state :profiles (get (keyword name))))
 
 (defn content-type [headers]
   (when headers (or (headers "content-type") (headers "Content-Type"))))
@@ -55,4 +77,3 @@
 (defn get-active-profile []
   (when-let [profile (:active-profile @app-state)]
     (get-in @app-state [:profiles profile])))
-

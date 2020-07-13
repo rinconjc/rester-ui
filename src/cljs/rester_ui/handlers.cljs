@@ -134,13 +134,14 @@
 (defn save-profile [name profile]
   (swap! app-state assoc-in [:profiles (keyword name)] profile))
 
-(defn run-test [test]
-  (u/log "running..." test)
-  (let [tests (:tests @app-state)
-        last-test (-> @app-state :tests last)
-        test (if (= "unsaved" last-test)
-               (merge last-test test)
-               (assoc test :suite "default" :name "unsaved"
-                     :id (-> last-test :id inc)))]
-    (swap! app-state assoc-in [:tests (:id test)] test)
-    (execute-test (:id test))))
+(defn create-adhoc-test! []
+  (when-not (some-> @app-state :tests last :suite (= "default"))
+    (let [id (or (some-> @app-state :tests last :id inc) 0)]
+      (swap! app-state update :tests
+             (fnil conj []) 
+             {:id id :verb :get :suite "default" :name "unnamed" :expect {:status 200}}))))
+
+(defn save-test! [id]
+  (swap! app-state assoc-in [:modals :test-save] true))
+
+(defn confirm-save-test! [])
