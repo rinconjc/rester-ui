@@ -20,7 +20,7 @@
     [:ul>li.header @(r/track m/page-title)]]
    [u/with-init
     [:ul#slide-out.sidenav.sidenav-fixed
-     [:li>h1.header "Rester"]
+     [:li>h1.header [:img {:src "/images/logo.svg" :height 48}]]
      [:li>div.divider]
      [:li
       [u/with-init
