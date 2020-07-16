@@ -58,3 +58,7 @@ header, main, footer {
     margin-top: 0.1rem !important;
     margin-bottom: 0.1rem !important;
 }
+
+.hidden {
+    display:none !important;
+}

@@ -79,6 +79,10 @@
    (for [[profile _] @(r/track m/profiles)] ^{:key profile}
      [:li>a {:href (str "#/profile/" (name profile)) :title profile} profile])])
 
+(defn test-menu-item [id name]
+  (r/with-let [result (r/track m/result-of id)]
+    [:span {:class (result-class @result)} [result-icon @result] name]))
+
 (defn test-suites-nav []
   [:li
    [:a.collapsible-header "Test Suites"
@@ -102,7 +106,7 @@
           (for [t tests] ^{:key (:id t)}
             [:li>a {:href (str "#/test-case/" (:id t))
                     :title (:name t)}
-             [:span {:class (result-class (:result t))} [result-icon (:result t)] (:name t) ]])]])]
+             [test-menu-item (:id t) (:name t)]])]])]
      #(ocall js/M.Collapsible "init" % #js{:accordion false})]]])
 
 (defn button [icon title on-click]
@@ -228,47 +232,48 @@
            "readOnly" true "showGutter" false "showLineNumbers" false]]]])]))
 
 (defn edit-test-case [test]
-  [:div.card.z-depth-3
-   [:div.card-content
-    [:div.row
-     [:div.col.s4.m2.input-field
-      [u/select-wrapper
-       [:select (u/with-binding {} test :verb keyword)
-        (for [m m/http-verbs] ^{:key m}
-          [:option {:value m} (str/upper-case (name m))])]]]
-     [:div.col.s8.m10.input-field
-      [:input (u/with-binding {:type "url" :placeholder "URL"} test :url)]]
+  (r/with-let [result (r/track m/result-of (:id @test))]
+    [:div.card.z-depth-3
+     [:div.card-content
+      [:div.row
+       [:div.col.s4.m2.input-field
+        [u/select-wrapper
+         [:select (u/with-binding {} test :verb keyword)
+          (for [m m/http-verbs] ^{:key m}
+            [:option {:value m} (str/upper-case (name m))])]]]
+       [:div.col.s8.m10.input-field
+        [:input (u/with-binding {:type "url" :placeholder "URL"} test :url)]]
+       (when (:url @test)
+         [:div
+          [:div.col.s12
+           [u/with-init
+            [:ul.tabs.z-depth-1
+             [:li.tab.col.s3>a {:href "#reqTab"} "Request"]
+             [:li.tab.col.s3>a {:href "#expectTab"} "Expect"]
+             [:li.tab.col.s3>a {:href "#optsTab"} "Options"]
+             [:li.tab.col.s3 {:class (when-not @result "hidden")}
+              [:a {:href "#respTab" } [result-icon @result] "Result"]]]
+            #(ocall js/M.Tabs "init" %)]]
+          [:div#reqTab.col.s12
+           [:div.row
+            [:div.col.s12>h6 "Headers"
+             [tuples-form "Header" (r/cursor (u/map-as-vector test) [:headers])]]
+            [:div.col.s12>h6 "Query Params"
+             [tuples-form "Param" (r/cursor test [:params])]]
+            (when (#{:post :put :patch} (:verb @test))
+              [:div.col.s12>h6 "Body"
+               [body-form (r/cursor test [:body]) (m/content-type (:headers @test)) ]])]]
+          [:div#expectTab.col.s12
+           [expected-form (r/cursor test [:expect])]]
+          [:div#optsTab.col.s12
+           [options-form (r/cursor test [:options])]]
+          [:div#respTab.col.s12
+           [result-view @result]]])]]
      (when (:url @test)
-       [:div
-        [:div.col.s12
-         [u/with-init
-          [:ul.tabs.z-depth-1
-           [:li.tab.col.s3>a {:href "#reqTab"} "Request"]
-           [:li.tab.col.s3>a {:href "#expectTab"} "Expect"]
-           [:li.tab.col.s3>a {:href "#optsTab"} "Options"]
-           (when (:result @test)
-             [:li.tab.col.s3>a {:href "#respTab"} [result-icon (:result @test)] "Result"])]
-          #(ocall js/M.Tabs "init" %)]]
-        [:div#reqTab.col.s12
-         [:div.row
-          [:div.col.s12>h6 "Headers"
-           [tuples-form "Header" (r/cursor (u/map-as-vector test) [:headers])]]
-          [:div.col.s12>h6 "Query Params"
-           [tuples-form "Param" (r/cursor test [:params])]]
-          (when (#{:post :put :patch} (:verb @test))
-            [:div.col.s12>h6 "Body"
-             [body-form (r/cursor test [:body]) (m/content-type (:headers @test)) ]])]]
-        [:div#expectTab.col.s12
-         [expected-form (r/cursor test [:expect])]]
-        [:div#optsTab.col.s12
-         [options-form (r/cursor test [:options])]]
-        [:div#respTab.col.s12
-         [result-view (:result @test)]]])]]
-   (when (:url @test)
-     [:div.card-action
-      [:button.btn {:on-click #(h/execute-test (:id @test))} "Run"]
-      [:button.btn.right {:on-click #(h/save-test! (:id @test))}
-       (if (= (:name @test) "unnamed") "Save" "Save As ...")]])])
+       [:div.card-action
+        [:button.btn {:on-click #(h/execute-test (:id @test))} "Run"]
+        [:button.btn.right {:on-click #(h/save-test! (:id @test))}
+         (if (= (:name @test) "unnamed") "Save" "Save As ...")]])] ))
 
 (defn test-view [test]
   [:div
@@ -311,22 +316,25 @@
             (ocall "open"))])))
 
 (defn save-test-modal []
-  (r/with-let [show (r/track m/show-modal? :save-test)
+  (r/with-let [id (r/track m/show-modal? :test-save)
                form (atom nil)]
-    (when @show
-      [u/modal {:on-close #(h/hide-modal :save-test )}
+    (when @id
+      [u/modal {:on-close #(h/hide-modal :test-save )}
        [:div.modal
         [:div.modal-content
          [:h4 "Save Test ..."]
-         [:form.col.s12
-          [:div.row
-           [:div.file-field.input-field
-            [u/select-wrapper
-             [:select#suite
-              (u/with-binding {:placeholder "Collection"} form :suite)
-              (for [suite (keys (m/test-suites))] ^{:key suite}
-                [:option {:value suite} suite])]]
-            [:label "Collection"]]]]]
+         [:div.row
+          [:div.input-field.col.s6
+           [u/select-wrapper
+            [:select#suite
+             (u/with-binding {:placeholder "Collection"} form :suite)
+             (for [suite (keys (m/test-suites))] ^{:key suite}
+               [:option {:value suite} suite])]]
+           [:label "Collection"]]
+          [:div.input-field.col.s12
+           [:input#name (u/with-binding {:type "text" :placeholder "Test Name..."} form :name)]
+           [:label.active "Test Name"]]]]
         [:div.modal-footer
-         [:a.btn.modal-close.waves-effect.waves-green {:on-click #(h/confirm-save-test!)} "Open"] " "
+         [:a.btn.modal-close.waves-effect.waves-green
+          {:on-click #(h/confirm-save-test! @id @form)} "Save"] " "
          [:a.modal-close.btn.waves-effect.waves-green "Close"]]]])))

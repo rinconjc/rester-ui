@@ -57,24 +57,23 @@
       body
       (js/JSON.stringify (clj->js body) nil 1))))
 
-(defn merge-results [results]
-  (loop [tests (:tests @app-state)
-         [x & xs] results]
-    (if x
-      (recur (update tests (:id x) assoc
-                     :result (as-> x result
-                               (update result :body stringify)
-                               (if (:response result)
-                                 (update-in result [:response :body] stringify)
-                                 result))) xs)
-      (swap! app-state assoc :tests tests))))
+(defn process-results [results]
+  (->> results
+       (map #(as-> % result
+               (update result :body stringify)
+               (if (:response result)
+                 (update-in result [:response :body] stringify)
+                 result)))
+       (map #(vector (:id %) %))
+       (into {})
+       (swap! app-state assoc :results)))
 
 (defn do-execute-tests [tests profile]
   (http/POST "/exec-tests"
              :params {:test-cases tests :profile (or profile {})}
              :format :json
              :response-format :json :keywords? true
-             :handler merge-results
+             :handler process-results
              :error-handler (partial handle-http-error "Failed running tests!")))
 
 (defn prompt-for-input-vars! [id vars]
@@ -142,6 +141,8 @@
              {:id id :verb :get :suite "default" :name "unnamed" :expect {:status 200}}))))
 
 (defn save-test! [id]
-  (swap! app-state assoc-in [:modals :test-save] true))
+  (swap! app-state assoc-in [:modals :test-save] id))
 
-(defn confirm-save-test! [])
+(defn confirm-save-test! [id form]
+  (swap! app-state update-in [:tests id] merge form)
+  (goto (str "#/test-case/" id)))

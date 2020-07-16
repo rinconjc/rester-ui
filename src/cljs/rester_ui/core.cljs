@@ -24,7 +24,7 @@
      [:li>div.divider]
      [:li
       [u/with-init
-       [:ul.collapsible.collapsible-expandable
+       [:ul.collapsible.expandable
         [:li
          [:a.collapsible-header "Profiles"
           [:span.right
@@ -34,13 +34,8 @@
          [v/profiles-nav]]
         [:li>div.divider]
         [v/test-suites-nav]]
-       #(ocall js/M.Collapsible "init" %)]]]
+       #(ocall js/M.Collapsible "init" % #js{:accordion false})]]]
     #(ocall js/M.Sidenav "init" %)]])
-
-(defn home-page []
-  [:div
-   [:h2 "Test your API"]
-   [v/edit-test-case @(r/track m/adhoc-test )]])
 
 (defn create-test-page []
   [:div
@@ -54,7 +49,7 @@
   [v/profile-view @(r/track m/get-active-profile) (:name params)])
 
 (def routes
-  [["/" {:name :home :view #'home-page :title "Rester"
+  [["/" {:name :home :view #'create-test-page :title "Rester"
          :init (fn [_] (h/create-adhoc-test!))}]
    ["/test-case/:id" {:name :test-case :view #'test-case-page :title "Test Case"
                       :parameters {:path {:id int?}}
