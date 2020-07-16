@@ -77,3 +77,6 @@
 (defn get-active-profile []
   (when-let [profile (:active-profile @app-state)]
     (get-in @app-state [:profiles profile])))
+
+(defn result-of [test-id]
+  (get-in @app-state [:results test-id]))
