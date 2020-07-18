@@ -21,7 +21,7 @@
 
 (defn open-tests []
   (r/with-let [form (atom {})]
-    [:div#open-suite.modal
+    [:div#open-suite.modal.modal
      [:div.modal-content
       [:h4 "Open Test Suites"]
       [:form.col.s12
@@ -66,7 +66,7 @@
   (r/with-let [error (m/error)]
     (when @error
       [u/with-init
-       [:div.modal
+       [:div.modal.modal-fixed-footer
         [:div.modal-content
          [:h4 (:title @error)]
          [:p (:message @error)]]
@@ -272,7 +272,7 @@
      (when (:url @test)
        [:div.card-action
         [:button.btn {:on-click #(h/execute-test (:id @test))} "Run"]
-        [:button.btn.right {:on-click #(h/save-test! (:id @test))}
+        [:button.btn.right {:on-click #(h/save-test! @test)}
          (if (= (:name @test) "unnamed") "Save" "Save As ...")]])] ))
 
 (defn test-view [test]
@@ -285,7 +285,7 @@
                profile (atom {})]
     (when @vars
       [u/with-init
-       [:div.modal
+       [:div.modal.modal-fixed-footer
         [:div.modal-content
          [:h4 "Test Variables"]
          [:div.row
@@ -315,26 +315,34 @@
             (ocall "init" % #js{"onCloseEnd" h/dismiss-vars-prompt})
             (ocall "open"))])))
 
+(defn save-test-form [form]
+  [u/modal {:on-close #(h/hide-modal :test-save )}
+   [:div.modal.modal-fixed-footer
+    [:div.modal-content
+     [:h4 "Save Test ..."]
+     [:div.row
+      [:div.input-field.col.s6
+       [u/select-wrapper
+        [:select#suite
+         (u/with-binding {:placeholder "Collection"} form :suite)
+         [:option {:value ""} "Select a collection"]
+         [:option {:value "_"} "<New Collection>"]
+         (for [suite (keys (m/test-suites))] ^{:key suite}
+           [:option {:value suite} suite])]]
+       [:label "Collection"]]
+      (when (= "_" (:suite @form))
+        [:div.input-field.col.s12
+         [:input#new-suite
+          (u/with-binding {:type "text" :placeholder "Collection name ..."} form :new-suite)]])
+      [:div.input-field.col.s12
+       [:input#name (u/with-binding {:type "text" :placeholder "Test Name..."} form :name)]
+       [:label.active "Test Name"]]]]
+    [:div.modal-footer
+     [:a.btn.modal-close.waves-effect.waves-green
+      {:on-click #(h/confirm-save-test! @form)} "Save"] " "
+     [:a.modal-close.btn.waves-effect.waves-green "Close"]]]])
+
 (defn save-test-modal []
-  (r/with-let [id (r/track m/show-modal? :test-save)
-               form (atom nil)]
-    (when @id
-      [u/modal {:on-close #(h/hide-modal :test-save )}
-       [:div.modal
-        [:div.modal-content
-         [:h4 "Save Test ..."]
-         [:div.row
-          [:div.input-field.col.s6
-           [u/select-wrapper
-            [:select#suite
-             (u/with-binding {:placeholder "Collection"} form :suite)
-             (for [suite (keys (m/test-suites))] ^{:key suite}
-               [:option {:value suite} suite])]]
-           [:label "Collection"]]
-          [:div.input-field.col.s12
-           [:input#name (u/with-binding {:type "text" :placeholder "Test Name..."} form :name)]
-           [:label.active "Test Name"]]]]
-        [:div.modal-footer
-         [:a.btn.modal-close.waves-effect.waves-green
-          {:on-click #(h/confirm-save-test! @id @form)} "Save"] " "
-         [:a.modal-close.btn.waves-effect.waves-green "Close"]]]])))
+  (r/with-let [test (r/track m/show-modal? :test-save)]
+    (when @test
+      [save-test-form (atom @test)])))
