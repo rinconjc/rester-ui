@@ -21,15 +21,15 @@
 
 (defn handle-http-error [title resp]
   (swap! app-state assoc
-          :error {:title title
-                  :message (js/JSON.stringify (clj->js (:response resp)))}))
+         :error {:title title
+                 :message (js/JSON.stringify (clj->js (:response resp)))}))
 
 (defn load-tests [form]
   (http/POST "/load-tests"
              :body (doto (js/FormData.) (.append "file" (:file @form)))
              :response-format :json :keywords? true
-             :handler #(swap! app-state assoc :tests
-                              (st/coerce (s/coll-of ::rs/test-case) % st/json-transformer))
+             :handler #(swap! app-state assoc :results {}
+                              :tests (st/coerce (s/coll-of ::rs/test-case) % st/json-transformer))
              :error-handler (partial handle-http-error "Failed Loading Tests")))
 
 (defn set-active-test! [id]
@@ -137,12 +137,14 @@
   (when-not (some-> @app-state :tests last :suite (= "default"))
     (let [id (or (some-> @app-state :tests last :id inc) 0)]
       (swap! app-state update :tests
-             (fnil conj []) 
+             (fnil conj [])
              {:id id :verb :get :suite "default" :name "unnamed" :expect {:status 200}}))))
 
-(defn save-test! [id]
-  (swap! app-state assoc-in [:modals :test-save] id))
+(defn save-test! [test]
+  (swap! app-state assoc-in [:modals :test-save] (select-keys test [:id :suite :name])))
 
-(defn confirm-save-test! [id form]
-  (swap! app-state update-in [:tests id] merge form)
-  (goto (str "#/test-case/" id)))
+(defn confirm-save-test! [form]
+  (swap! app-state update-in [:tests (:id form)] assoc
+         :name (:name form)
+         :suite (or (:new-suite form) (:suite form)))
+  (goto (str "#/test-case/" (:id form))))
