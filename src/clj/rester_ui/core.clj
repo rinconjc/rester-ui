@@ -65,8 +65,8 @@
                           :responses {200 {:body ::res/config}}
                           :handler (fn [{{{file :file} :multipart} :parameters}]
                                      (log/info "loading profiles file" file)
-                                    {:status 200
-                                     :body (rester/load-profiles (.getPath (:tempfile file)))})}}]]
+                                     {:status 200
+                                      :body (rester/load-profiles (.getPath (:tempfile file)))})}}]]
 
     {:exception pretty/exception
      :validate rs/validate
@@ -82,7 +82,7 @@
                            exception/default-handlers
                            {:reitit.coercion/request-coercion (coercion-error-handler 400)
                             :reitit.coercion/response-coercion (coercion-error-handler 500)
-                            ::exception/default (fn[e req]
+                            ::exception/default (fn [e req]
                                                   (log/error e "exception:", (ex-data e))
                                                   (exception/default-handler e req))}))
                          ;; exception/exception-middleware
@@ -91,8 +91,7 @@
                          ;; coercing response bodys
                          coercion/coerce-response-middleware
                          ;; multipart
-                         multipart/multipart-middleware
-                         ]}})
+                         multipart/multipart-middleware]}})
    (ring/routes
     (ring/create-resource-handler {:path "/"}))))
 

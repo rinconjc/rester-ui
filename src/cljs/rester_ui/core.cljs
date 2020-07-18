@@ -40,7 +40,7 @@
 (defn create-test-page []
   [:div
    [:h3 "Test Your Service ..."]
-   [v/edit-test-case @(r/track m/adhoc-test )]])
+   [v/edit-test-case @(r/track m/adhoc-test)]])
 
 (defn test-case-page []
   [v/test-view @(r/track m/active-test)])
@@ -53,7 +53,7 @@
          :init (fn [_] (h/create-adhoc-test!))}]
    ["/test-case/:id" {:name :test-case :view #'test-case-page :title "Test Case"
                       :parameters {:path {:id int?}}
-                      :init (fn[{{id :id} :path-params}]
+                      :init (fn [{{id :id} :path-params}]
                               (h/set-active-test! (js/parseInt id)))}]
    ["/create-test" {:name :create-test :view #'create-test-page :title "Create Test"
                     :init (fn [_] (h/create-adhoc-test!))}]
@@ -85,7 +85,7 @@
 
 (defn mount-app-element []
   (rfe/start! (rf/router routes)
-              (fn[match hist]
+              (fn [match hist]
                 (m/set-active-page! match))
               {})
   (when-let [el (get-app-element)]
