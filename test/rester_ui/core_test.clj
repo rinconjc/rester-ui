@@ -10,7 +10,7 @@
 (defn like [x y]
   (cond
     (map? x) (and (map? y)
-                  (every? (fn[[k v]] (if (fn? v) (v (get y k)) (like v (get y k)))) x))
+                  (every? (fn [[k v]] (if (fn? v) (v (get y k)) (like v (get y k)))) x))
     (coll? x) (and (coll? y) (or (and (empty? x) (empty? y))
                                  (and (like (first x) (first y)) (like (rest x) (rest y)))))
     (fn? x) (x y)

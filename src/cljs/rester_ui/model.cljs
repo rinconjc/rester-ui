@@ -22,6 +22,11 @@
 
 (def http-verbs rs/http-verbs)
 
+(def new-test {:verb :get :suite "<New Collection>" :name "<New Test>" :expect {:status 200}})
+
+(defn is-new-test? [t]
+  (= "<New Test>" (:name t)))
+
 (defn set-active-page! [p]
   (let [init-fn (get-in p [:data :init])]
     (swap! app-state assoc :page p)

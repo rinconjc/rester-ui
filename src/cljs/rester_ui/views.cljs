@@ -18,7 +18,6 @@
         (:error result) "danger"
         (:failure result) "warning"))
 
-
 (defn open-tests []
   (r/with-let [form (atom {})]
     [:div#open-suite.modal.modal
@@ -46,7 +45,7 @@
   (r/with-let [show (r/track m/show-modal? :open-profile)
                file (atom nil)]
     (when @show
-      [u/modal {:on-close #(h/hide-modal :open-profile )}
+      [u/modal {:on-close #(h/hide-modal :open-profile)}
        [:div.modal
         [:div.modal-content
          [:h4 "Open Profiles"]
@@ -77,7 +76,7 @@
 (defn profiles-nav []
   [:div.collapsible-body>ul
    (for [[profile _] @(r/track m/profiles)] ^{:key profile}
-     [:li>a {:href (str "#/profile/" (name profile)) :title profile} profile])])
+        [:li>a {:href (str "#/profile/" (name profile)) :title profile} profile])])
 
 (defn test-menu-item [id name]
   (r/with-let [result (r/track m/result-of id)]
@@ -100,13 +99,13 @@
     [u/with-init
      [:ul.collapsible.expandable
       (for [[suite tests] @(r/track m/test-suites)] ^{:key suite}
-        [:li.menu-items
-         [:a.collapsible-header suite]
-         [:div.collapsible-body>div.padded>ul.menu-items
-          (for [t tests] ^{:key (:id t)}
-            [:li>a {:href (str "#/test-case/" (:id t))
-                    :title (:name t)}
-             [test-menu-item (:id t) (:name t)]])]])]
+           [:li.menu-items
+            [:a.collapsible-header suite]
+            [:div.collapsible-body>div.padded>ul.menu-items
+             (for [t tests] ^{:key (:id t)}
+                  [:li>a {:href (str "#/test-case/" (:id t))
+                          :title (:name t)}
+                   [test-menu-item (:id t) (:name t)]])]])]
      #(ocall js/M.Collapsible "init" % #js{:accordion false})]]])
 
 (defn button [icon title on-click]
@@ -116,13 +115,13 @@
   [:div.row.compact-inputs
    (doall
     (for [[i [name value]] (map-indexed vector @entries)] ^{:key i}
-      [:div.col.s12
-       [:div.input-field.col.s5
-        [:input (u/with-binding {:type "text" :placeholder label} entries [i 0])]]
-       [:div.input-field.col.s5
-        [:input (u/with-binding {:type "text" :placeholder (str label " Value")} entries [i 1])]]
-       [:div.input-field.col.s2
-        [button "delete" (str "Remove " label) (u/no-default swap! entries u/remove-nth i)]]]))
+         [:div.col.s12
+          [:div.input-field.col.s5
+           [:input (u/with-binding {:type "text" :placeholder label} entries [i 0])]]
+          [:div.input-field.col.s5
+           [:input (u/with-binding {:type "text" :placeholder (str label " Value")} entries [i 1])]]
+          [:div.input-field.col.s2
+           [button "delete" (str "Remove " label) (u/no-default swap! entries u/remove-nth i)]]]))
    [:div.col.s12
     [:a.btn.btn-floating.btn-small.waves-effect.waves-light
      {:href "#!" :on-click (u/no-default swap! entries (fnil conj []) ["" ""])}
@@ -167,17 +166,17 @@
     [:div.card
      [:div.card-content
       [:span.card-title "Profile: " name]
-      [:div [:h6 "Variables" ]]
+      [:div [:h6 "Variables"]]
       [:div.row
        (doall
-        (for [v (keys (:bindings profile))]^{:key v}
-          [:div.col.s12
-           [:label.left v]
-           [:input (u/with-binding {:type "text" :id v :placeholder v}
-                     form [:bindings v])]]))]
-      [:div [:h6 "Headers" ]]
+        (for [v (keys (:bindings profile))] ^{:key v}
+             [:div.col.s12
+              [:label.left v]
+              [:input (u/with-binding {:type "text" :id v :placeholder v}
+                        form [:bindings v])]]))]
+      [:div [:h6 "Headers"]]
       [tuples-form "Header" (r/cursor (u/map-as-vector form) [:headers])]
-      [:div [:h6 "Misc" ]]
+      [:div [:h6 "Misc"]]
       [:div.row
        [:div.col.s6
         [:label "Skip"]
@@ -212,7 +211,7 @@
           [:div.row
            (doall
             (for [[i [h v]] (map-indexed vector (:headers result))] ^{:key i}
-              [:div.col.s12 [:b h " : "] v]))])
+                 [:div.col.s12 [:b h " : "] v]))])
         (when (:body result)
           [:div.row
            [:div.col.s12
@@ -224,7 +223,7 @@
         [:div.row
          (doall
           (for [[i [h v]] (map-indexed vector (get-in result [:response :headers]))] ^{:key i}
-            [:div.col.s12 [:b h " : "] v]))]
+               [:div.col.s12 [:b h " : "] v]))]
         [:div.row
          [:div.col.s12
           [u/code-editor (get-in result [:response :body])
@@ -240,7 +239,7 @@
         [u/select-wrapper
          [:select (u/with-binding {} test :verb keyword)
           (for [m m/http-verbs] ^{:key m}
-            [:option {:value m} (str/upper-case (name m))])]]]
+               [:option {:value m} (str/upper-case (name m))])]]]
        [:div.col.s8.m10.input-field
         [:input (u/with-binding {:type "url" :placeholder "URL"} test :url)]]
        (when (:url @test)
@@ -252,7 +251,7 @@
              [:li.tab.col.s3>a {:href "#expectTab"} "Expect"]
              [:li.tab.col.s3>a {:href "#optsTab"} "Options"]
              [:li.tab.col.s3 {:class (when-not @result "hidden")}
-              [:a {:href "#respTab" } [result-icon @result] "Result"]]]
+              [:a {:href "#respTab"} [result-icon @result] "Result"]]]
             #(ocall js/M.Tabs "init" %)]]
           [:div#reqTab.col.s12
            [:div.row
@@ -262,7 +261,7 @@
              [tuples-form "Param" (r/cursor test [:params])]]
             (when (#{:post :put :patch} (:verb @test))
               [:div.col.s12>h6 "Body"
-               [body-form (r/cursor test [:body]) (m/content-type (:headers @test)) ]])]]
+               [body-form (r/cursor test [:body]) (m/content-type (:headers @test))]])]]
           [:div#expectTab.col.s12
            [expected-form (r/cursor test [:expect])]]
           [:div#optsTab.col.s12
@@ -273,7 +272,7 @@
        [:div.card-action
         [:button.btn {:on-click #(h/execute-test (:id @test))} "Run"]
         [:button.btn.right {:on-click #(h/save-test! @test)}
-         (if (= (:name @test) "unnamed") "Save" "Save As ...")]])] ))
+         (if (= (:name @test) "unnamed") "Save" "Save As ...")]])]))
 
 (defn test-view [test]
   [:div
@@ -296,14 +295,14 @@
              [:option "Use Profile"]
              (doall
               (for [[i [n _]] (map-indexed vector (m/profiles))] ^{:key i}
-                [:option {:value n} n]))]]
+                   [:option {:value n} n]))]]
            [:label {:for "profile"} "Profiles:"]]
           (doall
-           (for [[i var] (map-indexed vector (:vars @vars))]^{:key i}
-             [:div.input-field.col.s12
-              [:input (u/with-binding {:type "text" :id var :placeholder var}
-                        profile [:bindings var])]
-              [:label.active {:for var} var]]))
+           (for [[i var] (map-indexed vector (:vars @vars))] ^{:key i}
+                [:div.input-field.col.s12
+                 [:input (u/with-binding {:type "text" :id var :placeholder var}
+                           profile [:bindings var])]
+                 [:label.active {:for var} var]]))
           [:div.input-field.col.s6
            [:input (u/with-binding {:type "text" :id "profile" :placeholder "profile name"}
                      profile :name)]
@@ -316,7 +315,7 @@
             (ocall "open"))])))
 
 (defn save-test-form [form]
-  [u/modal {:on-close #(h/hide-modal :test-save )}
+  [u/modal {:on-close #(h/hide-modal :test-save)}
    [:div.modal.modal-fixed-footer
     [:div.modal-content
      [:h4 "Save Test ..."]
@@ -328,7 +327,7 @@
          [:option {:value ""} "Select a collection"]
          [:option {:value "_"} "<New Collection>"]
          (for [suite (keys (m/test-suites))] ^{:key suite}
-           [:option {:value suite} suite])]]
+              [:option {:value suite} suite])]]
        [:label "Collection"]]
       (when (= "_" (:suite @form))
         [:div.input-field.col.s12

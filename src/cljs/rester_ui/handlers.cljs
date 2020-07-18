@@ -1,6 +1,6 @@
 (ns rester-ui.handlers
   (:require [ajax.core :as http]
-            [rester-ui.model :refer [app-state]]
+            [rester-ui.model :refer [app-state] :as m]
             [rester-ui.utils :as u]
             [rester.specs :as rs]
             [rester.utils :as ru]
@@ -26,11 +26,11 @@
 
 (defn load-tests [form]
   (http/POST "/load-tests"
-             :body (doto (js/FormData.) (.append "file" (:file @form)))
-             :response-format :json :keywords? true
-             :handler #(swap! app-state assoc :results {}
-                              :tests (st/coerce (s/coll-of ::rs/test-case) % st/json-transformer))
-             :error-handler (partial handle-http-error "Failed Loading Tests")))
+    :body (doto (js/FormData.) (.append "file" (:file @form)))
+    :response-format :json :keywords? true
+    :handler #(swap! app-state assoc :results {}
+                     :tests (st/coerce (s/coll-of ::rs/test-case) % st/json-transformer))
+    :error-handler (partial handle-http-error "Failed Loading Tests")))
 
 (defn set-active-test! [id]
   (println "activating test:" id)
@@ -39,7 +39,7 @@
 (defn input-vars [tests id]
   (let [t (tests id)]
     (loop [vars (:vars t)
-           [dep & more] (set/union (:deps t) (:var-deps t)) ]
+           [dep & more] (set/union (:deps t) (:var-deps t))]
       (if-let [t (tests dep)]
         (recur (-> vars (set/union (:vars t))
                    (set/difference (-> t :options :extractors keys)))
@@ -70,18 +70,18 @@
 
 (defn do-execute-tests [tests profile]
   (http/POST "/exec-tests"
-             :params {:test-cases tests :profile (or profile {})}
-             :format :json
-             :response-format :json :keywords? true
-             :handler process-results
-             :error-handler (partial handle-http-error "Failed running tests!")))
+    :params {:test-cases tests :profile (or profile {})}
+    :format :json
+    :response-format :json :keywords? true
+    :handler process-results
+    :error-handler (partial handle-http-error "Failed running tests!")))
 
 (defn prompt-for-input-vars! [id vars]
   (swap! app-state assoc :prompt-for-input-vars {:vars vars :test-id id}))
 
 (defn execute-all [profile]
-  (let [{:keys[runnable ignored skipped]} (ru/process-tests (:tests @app-state)
-                                                            (or profile {}))
+  (let [{:keys [runnable ignored skipped]} (ru/process-tests (:tests @app-state)
+                                                             (or profile {}))
         vars (set/difference (apply set/union (map :vars runnable))
                              (apply set/union (map (comp keys :extractors :options) runnable)))]
     (if (and (seq vars) (not profile))
@@ -94,8 +94,8 @@
    (if (= :all id)
      (execute-all profile)
      (let [test (nth (:tests @app-state) id)
-           {:keys[runnable ignored skipped]} (ru/process-tests (:tests @app-state)
-                                                               (or profile {}))
+           {:keys [runnable ignored skipped]} (ru/process-tests (:tests @app-state)
+                                                                (or profile {}))
            tests (into {} (for [t runnable] [(:id t) t]))
            vars (input-vars tests id)]
        (if (and (seq vars) (not profile))
@@ -121,11 +121,11 @@
 
 (defn load-profiles [file]
   (http/POST "/profiles"
-             :body (doto (js/FormData.) (.append "file" file))
-             :response-format :json :keywords? true
-             :handler #(swap! app-state assoc :profiles
-                              (st/coerce ::rs/config % st/json-transformer))
-             :error-handler (partial handle-http-error "Failed Loading Profiles")))
+    :body (doto (js/FormData.) (.append "file" file))
+    :response-format :json :keywords? true
+    :handler #(swap! app-state assoc :profiles
+                     (st/coerce ::rs/config % st/json-transformer))
+    :error-handler (partial handle-http-error "Failed Loading Profiles")))
 
 (defn set-active-profile! [name]
   (swap! app-state assoc :active-profile (keyword name)))
@@ -134,11 +134,11 @@
   (swap! app-state assoc-in [:profiles (keyword name)] profile))
 
 (defn create-adhoc-test! []
-  (when-not (some-> @app-state :tests last :suite (= "default"))
+  (when-not (some-> @app-state :tests last :suite m/is-new-test?)
     (let [id (or (some-> @app-state :tests last :id inc) 0)]
       (swap! app-state update :tests
              (fnil conj [])
-             {:id id :verb :get :suite "default" :name "unnamed" :expect {:status 200}}))))
+             (assoc m/new-test :id id)))))
 
 (defn save-test! [test]
   (swap! app-state assoc-in [:modals :test-save] (select-keys test [:id :suite :name])))

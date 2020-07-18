@@ -19,7 +19,7 @@
     ([k v] (swap! state assoc-in k (into {} v)))))
 
 (defn no-default [f & args]
-  (fn[e]
+  (fn [e]
     (try (apply f args)
          (catch js/Error e (log e)))
     (ocall e "preventDefault")
@@ -32,7 +32,7 @@
     :reagent-render
     (fn [elem _ & {:as opts}] elem)
     :component-did-update
-    (fn[this old-argv old-state snapshot]
+    (fn [this old-argv old-state snapshot]
       (when (fn? did-update) (did-update this old-argv old-state snapshot)))
     :component-did-mount
     (fn [this]
@@ -48,7 +48,7 @@
 (defn select-wrapper [select]
   [with-init select  #(ocall js/M.FormSelect "init" %)
    :did-update
-   (fn[this _ _ _]
+   (fn [this _ _ _]
      (let [el (r/dom-node this)
            form-select (oget el "M_FormSelect")]
        (when-not (= (oget el "value") (first (ocall form-select "getSelectedValues")))
