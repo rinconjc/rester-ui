@@ -36,15 +36,21 @@
   (println "activating test:" id)
   (swap! app-state assoc :active-test id))
 
-(defn input-vars [tests id]
-  (let [t (tests id)]
-    (loop [vars (:vars t)
-           [dep & more] (set/union (:deps t) (:var-deps t))]
-      (if-let [t (tests dep)]
-        (recur (-> vars (set/union (:vars t))
-                   (set/difference (-> t :options :extractors keys)))
-               (set/union (:deps t) (:var-deps t) more))
-        vars))))
+(defn input-vars
+  ([tests]
+   (if (seq? tests)
+     (->> tests (map input-vars) (apply set/union))
+     (set/select #(not (re-matches ru/date-exp-pattern %)) (:vars tests))))
+
+  ([tests id]
+   (let [t (tests id)]
+     (loop [vars (input-vars t)
+            [dep & more] (set/union (:deps t) (:var-deps t))]
+       (if-let [t (tests dep)]
+         (recur (-> vars (set/union (input-vars t))
+                    (set/difference (-> t :options :extractors keys)))
+                (set/union (:deps t) (:var-deps t) more))
+         vars)))))
 
 (defn dependent-tests [tests id]
   (let [t (tests id)
@@ -82,7 +88,7 @@
 (defn execute-all [profile]
   (let [{:keys [runnable ignored skipped]} (ru/process-tests (:tests @app-state)
                                                              (or profile {}))
-        vars (set/difference (apply set/union (map :vars runnable))
+        vars (set/difference (input-vars runnable)
                              (apply set/union (map (comp keys :extractors :options) runnable)))]
     (if (and (seq vars) (not profile))
       (prompt-for-input-vars! :all vars)
@@ -134,7 +140,7 @@
   (swap! app-state assoc-in [:profiles (keyword name)] profile))
 
 (defn create-adhoc-test! []
-  (when-not (some-> @app-state :tests last :suite m/is-new-test?)
+  (when-not (some-> @app-state :tests last m/is-new-test?)
     (let [id (or (some-> @app-state :tests last :id inc) 0)]
       (swap! app-state update :tests
              (fnil conj [])

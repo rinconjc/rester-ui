@@ -231,7 +231,7 @@
            "readOnly" true "showGutter" false "showLineNumbers" false]]]])]))
 
 (defn edit-test-case [test]
-  (r/with-let [result (r/track m/result-of (:id @test))]
+  (let [result (r/track m/result-of (:id @test))]
     [:div.card.z-depth-3
      [:div.card-content
       [:div.row
@@ -272,7 +272,7 @@
        [:div.card-action
         [:button.btn {:on-click #(h/execute-test (:id @test))} "Run"]
         [:button.btn.right {:on-click #(h/save-test! @test)}
-         (if (= (:name @test) "unnamed") "Save" "Save As ...")]])]))
+         (if (m/is-new-test? @test) "Save" "Save As ...")]])]))
 
 (defn test-view [test]
   [:div
