@@ -3,4 +3,5 @@
   :auto-testing true
   :open-file-command "emacsclient"
   :open-url "http://localhost:4000"}
-{:main rester-ui.core}
+{:main rester-ui.core
+ :infer-externs true}
