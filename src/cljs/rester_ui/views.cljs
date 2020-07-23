@@ -184,6 +184,9 @@
      [:div.card-action
       [:button.btn {:on-click #(h/save-profile name @form)} "Save"]]]))
 
+(defn header-values [v]
+  (if (string? v) v (str/join "," v)))
+
 (defn result-view [result]
   (when result
     [:div
@@ -211,7 +214,7 @@
           [:div.row
            (doall
             (for [[i [h v]] (map-indexed vector (:headers result))] ^{:key i}
-                 [:div.col.s12 [:b h " : "] v]))])
+              [:div.col.s12 [:b h " : "] (header-values v)]))])
         (when (:body result)
           [:div.row
            [:div.col.s12
@@ -223,7 +226,7 @@
         [:div.row
          (doall
           (for [[i [h v]] (map-indexed vector (get-in result [:response :headers]))] ^{:key i}
-               [:div.col.s12 [:b h " : "] v]))]
+               [:div.col.s12 [:b h " : "] (header-values v)]))]
         [:div.row
          [:div.col.s12
           [u/code-editor (get-in result [:response :body])
@@ -286,7 +289,7 @@
       [u/with-init
        [:div.modal.modal-fixed-footer
         [:div.modal-content
-         [:h4 "Test Variables"]
+         [:h4 "Input Variables"]
          [:div.row
           [:div.input-field.col.s6
            [u/select-wrapper
