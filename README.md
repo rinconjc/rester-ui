@@ -4,12 +4,12 @@ A simple tool for quickly testing HTTP(s) URLs.
 
 ## Overview
 
-This is a web interface for (Rester)[https://github.com/rinconjc/rester], the data driven API integration testing tool.
+This is a web interface for [Rester](https://github.com/rinconjc/rester), the data driven API integration testing tool.
 The test cases can be defined in any format supported by Rester, and then imported into this tool for running.
 
 ## Usage
 
-Rester-ui is a Java executable JAR file. Download the (latest release)[https://github.com/rinconjc/rester-ui/releases] archive and double-click (Windows) to execute, or use the following command.
+Rester-ui is a Java executable JAR file. Download the [latest release](https://github.com/rinconjc/rester-ui/releases) archive and double-click (Windows) to execute, or use the following command.
 
     java -jar rester-ui.jar
     
