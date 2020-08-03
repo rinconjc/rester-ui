@@ -62,3 +62,8 @@ header, main, footer {
 .hidden {
     display:none !important;
 }
+.abbr{
+    text-overflow: ellipsis;
+    max-width: 100%;
+    overflow: hidden;
+}
