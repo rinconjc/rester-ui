@@ -86,6 +86,7 @@
   [:li
    [:a.collapsible-header "Test Suites"
     [:span.right
+     [:i.material-icons {:title "Export Tests"} "archive"]
      [:i.material-icons.modal-trigger
       {:title "Open Test Suites" :data-target "open-suite"
        :on-click #(do (js/console.log "clicked!"))} "folder_open"]
@@ -348,3 +349,23 @@
   (r/with-let [test (r/track m/show-modal? :test-save)]
     (when @test
       [save-test-form (atom @test)])))
+
+(defn export-tests-modal []
+  (r/with-let [shown? (r/track m/show-modal? :export-tests)
+               form (atom {})]
+    (when @shown?
+      [:div.modal
+       [:div.modal-content
+        [:h4 "Exports Tests"]
+        [:div.row
+         [:div.input-field.col.s6
+          [u/select-wrapper
+           [:select#format (u/with-binding form :format)
+            (for [f (m/test-formats)]^{:key f}
+              [:option {:value f} f])]]
+          [:label {:for "format"} "Format"]]]
+        ]
+       [:div.modal-footer
+        [:a.btn.modal-close.waves-effect.waves-green
+         {:on-click #(h/export-tests! @form)} "Export"]
+        [:a.modal-close.btn.waves-effect.waves-green "Close"]]])))

@@ -154,3 +154,10 @@
          :name (:name form)
          :suite (or (:new-suite form) (:suite form)))
   (goto (str "#/test-case/" (:id form))))
+
+;;  export tests 
+(defn start-export-test! []
+  (swap! app-state update-in [:modals :export-tests] true))
+
+(defn export-tests! [form]
+  (http/POST "/export" ))

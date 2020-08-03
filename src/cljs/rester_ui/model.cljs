@@ -20,6 +20,8 @@
                   (pr-str (select-keys @app-state [:tests :profiles])))
            (js/console.log "saved!"))))
 
+(def test-formats ["CSV" "YAML" "EDN"])
+
 (def http-verbs rs/http-verbs)
 
 (def new-test {:verb :get :suite "<New Collection>" :name "<New Test>" :expect {:status 200}})

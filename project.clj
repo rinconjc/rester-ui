@@ -36,4 +36,5 @@
                        :env {:production true}
                        :prep-tasks ["fig:min" "compile"]}}
   :uberjar-exclusions [#"public/cljs-out/(fig|dev/).*"]
+  :uberjar-name "rester-app.jar"
   )
