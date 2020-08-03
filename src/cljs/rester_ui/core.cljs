@@ -28,6 +28,8 @@
         [:li
          [:a.collapsible-header "Profiles"
           [:span.right
+           [:i.material-icons {:title "Export Profiles"
+                               } "archive"]
            [:i.material-icons {:title "Open profiles"
                                :on-click (u/no-default h/show-modal :open-profile)} "folder_open"]
            [:i.material-icons {:title "Add profile"} "library_add"]]]
@@ -78,6 +80,7 @@
     [v/input-vars-prompt]
     [v/open-profile]
     [v/save-test-modal]
+    ;; [v/export-tests-modal]
     [:footer]]])
 
 (defn mount [el]
