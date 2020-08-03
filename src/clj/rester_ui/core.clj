@@ -20,6 +20,8 @@
             [rester.utils :as ru])
   (:import java.util.Date))
 
+(defonce async-tasks {})
+
 (s/def ::test-cases (s/coll-of ::res/test-case :into []))
 (s/def ::failure string?)
 (s/def ::request-time int?)
@@ -44,6 +46,9 @@
       (assoc-in [:transformers :response :formats "application/json"] rcs/string-transformer)
       rcs/create))
 
+(defn delayed [fn tests-cases format]
+  (swap! delayed-reqs assoc ))
+
 (def app
   (ring/ring-handler
    (ring/router
@@ -60,6 +65,12 @@
                             :handler (fn [{{{:keys [test-cases profile]} :body} :parameters :as req}]
                                        {:status 200
                                         :body (rester/exec-tests test-cases (or profile {}))})}}]
+
+     ["/export-tests" {:post {:parameters {:body ::export-tests-request}
+                             :responses {200 {:body ::export-response}}
+                             :handler (fn [{{{:keys [test-cases format]} :body} :parameters :as req}]
+                                        {:status 200
+                                         :body (save-export-req! test-cases (or profile {}))})}} ]
 
      ["/profiles" {:post {:parameters {:multipart {:file multipart/temp-file-part}}
                           :responses {200 {:body ::res/config}}
