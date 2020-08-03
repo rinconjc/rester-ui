@@ -1,10 +1,17 @@
 # rester-ui
 
-FIXME: Write a one-line description of your library/project.
+Test web services 
+I use curl a lot but sometimes I keep repeating myself
+Don't repeat youself
+UI for (rester)[https://github.com/rinconjc/rester], is a web service API testing tool.
+
 
 ## Overview
 
-FIXME: Write a paragraph about the library/project and highlight its goals.
+Do you feel repeating yourself 
+
+Rester-UI allows testing http(s) endpoints, and saving
+
 
 ## Development
 

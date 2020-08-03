@@ -214,7 +214,7 @@
           [:div.row
            (doall
             (for [[i [h v]] (map-indexed vector (:headers result))] ^{:key i}
-              [:div.col.s12 [:b h " : "] (header-values v)]))])
+              [:div.col.s12.abbr [:b h " : "] (header-values v)]))])
         (when (:body result)
           [:div.row
            [:div.col.s12
