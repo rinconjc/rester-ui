@@ -20,7 +20,7 @@
             [rester.utils :as ru])
   (:import java.util.Date))
 
-(defonce async-tasks {})
+(defonce async-tasks {:count 0 :tasks {}})
 
 (s/def ::test-cases (s/coll-of ::res/test-case :into []))
 (s/def ::failure string?)
@@ -31,6 +31,7 @@
 (s/def ::exec-result (s/keys :req-un [::res/id ::res/url ::res/verb ::res/headers]
                              :opt-un [::res/success ::res/body ::failure ::error ::response]))
 (s/def ::exec-response (s/coll-of ::exec-result :into []))
+(s/def ::export-tests-request (s/keys :req-un [::format ::test-cases]))
 
 (defn coercion-error-handler [status]
   (let [handler (exception/create-coercion-handler status)]
@@ -46,8 +47,13 @@
       (assoc-in [:transformers :response :formats "application/json"] rcs/string-transformer)
       rcs/create))
 
-(defn delayed [fn tests-cases format]
-  (swap! delayed-reqs assoc ))
+(defn delayed [f & args]
+  (swap! async-tasks update
+         (fn [{:keys[count tasks]}]
+           {:count (inc count) :tasks (assoc tasks (inc count) [f args])})))
+
+(defn export-tests [test-cases]
+  )
 
 (def app
   (ring/ring-handler
@@ -70,7 +76,7 @@
                              :responses {200 {:body ::export-response}}
                              :handler (fn [{{{:keys [test-cases format]} :body} :parameters :as req}]
                                         {:status 200
-                                         :body (save-export-req! test-cases (or profile {}))})}} ]
+                                         :body (delayed export-tests test-cases )})}} ]
 
      ["/profiles" {:post {:parameters {:multipart {:file multipart/temp-file-part}}
                           :responses {200 {:body ::res/config}}
