@@ -16,7 +16,8 @@
                  [cljs-ajax "0.8.0" :exclusions [org.apache.httpcomponents/httpasyncclient org.apache.httpcomponents/httpcore]]
                  [binaryage/oops "0.7.0"]
                  [rester "0.2.2-SNAPSHOT"]
-                 [ring/ring-mock "0.4.0"]]
+                 [ring/ring-mock "0.4.0"]
+                 [ring/ring-jetty-adapter "1.8.1"]]
 
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
 
@@ -30,8 +31,7 @@
   :profiles {:dev {:repl-options {:init (start-server)}
                    :dependencies [[com.bhauman/figwheel-main "0.2.3"]
                                   [com.bhauman/rebel-readline-cljs "0.1.4"]]}
-             :uberjar {:dependencies [[ring/ring-jetty-adapter "1.8.1"]]
-                       :aot :all
+             :uberjar {:aot :all
                        :omit-sources true
                        :env {:production true}
                        :prep-tasks ["fig:min" "compile"]}}

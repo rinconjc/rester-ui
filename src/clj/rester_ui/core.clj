@@ -31,6 +31,7 @@
 (s/def ::exec-result (s/keys :req-un [::res/id ::res/url ::res/verb ::res/headers]
                              :opt-un [::res/success ::res/body ::failure ::error ::response]))
 (s/def ::exec-response (s/coll-of ::exec-result :into []))
+(s/def ::export-tests-request (s/keys :req-un [::test-cases ::format]))
 
 (defn coercion-error-handler [status]
   (let [handler (exception/create-coercion-handler status)]
@@ -47,7 +48,7 @@
       rcs/create))
 
 (defn delayed [fn tests-cases format]
-  (swap! delayed-reqs assoc ))
+  (swap! async-tasks assoc ))
 
 (def app
   (ring/ring-handler
@@ -70,7 +71,7 @@
                              :responses {200 {:body ::export-response}}
                              :handler (fn [{{{:keys [test-cases format]} :body} :parameters :as req}]
                                         {:status 200
-                                         :body (save-export-req! test-cases (or profile {}))})}} ]
+                                         :body (rester/export test-cases format)})}} ]
 
      ["/profiles" {:post {:parameters {:multipart {:file multipart/temp-file-part}}
                           :responses {200 {:body ::res/config}}
